@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PuntoMaestro · balanceo de helados</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--card:#eefaf5;--ink:#12332b;--mut:#4f6b62;--line:#d5efe4;--ok:#237a52;--warn:#a86a00;--bad:#c0334a;--acc:#2fb98b;--accfg:#0b2a20;--zone:#a9e5cf;--brand:#178a64}
+#lbl{display:none}@media print{main{display:none!important}body{background:#fff!important;color:#000!important}#lbl{display:block!important;color:#000;background:#fff;padding:12px;font:14px/1.45 system-ui,sans-serif}#lbl h2{font-size:20px;margin:0 0 8px;color:#000}#lbl p{margin:4px 0}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1a16;--card:#14261f;--ink:#e4f3ec;--mut:#93b3a6;--line:#25443a;--ok:#6cc27d;--warn:#e6b450;--bad:#f0788a;--acc:#3ccb9b;--accfg:#06241a;--zone:#1f5a45;--brand:#3ccb9b}}
+:root[data-theme="dark"]{--bg:#0d1a16;--card:#14261f;--ink:#e4f3ec;--mut:#93b3a6;--line:#25443a;--ok:#6cc27d;--warn:#e6b450;--bad:#f0788a;--acc:#3ccb9b;--accfg:#06241a;--zone:#1f5a45;--brand:#3ccb9b}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:18px 16px 48px}
+h1,h2{font-family:"Manrope",system-ui,sans-serif;line-height:1.15;margin:0}
+h1{font-size:1.7rem}
+h2{font-size:1.15rem;margin:26px 0 10px}
+.sub{color:var(--mut);margin:6px 0 16px}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+select,input,button{font:inherit;color:var(--ink)}
+select,input{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-height:44px}
+button{min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:8px 14px;cursor:pointer}
+button.p{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:600}
+:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr 84px 54px 44px;gap:8px;margin-bottom:8px;border-left:5px solid var(--cc,var(--line));padding-left:8px}.chip2{border:1px solid var(--cc);color:var(--ink);background:color-mix(in srgb,var(--cc) 14%,var(--card));border-radius:999px;padding:4px 11px;min-height:34px;font-size:.88rem}.chip2.on{background:var(--cc);color:#fff;font-weight:600}.lk{display:flex;align-items:center;justify-content:center;gap:2px;min-height:44px;cursor:pointer}.lk input{min-height:0;width:18px;height:18px;padding:0}.chip{display:inline-block;border-radius:8px;padding:2px 8px;margin:4px 6px 0 0;font-size:.85rem;border:1px solid var(--line)}.chip.ok{color:var(--ok);border-color:var(--ok)}.chip.bad{color:var(--bad);border-color:var(--bad)}#sug .mh{padding:3px 0;border-bottom:1px dashed var(--line)}#sug button{width:100%;margin-top:12px}.qty input{width:110px}
+.row input{text-align:right}
+.tot{display:flex;justify-content:space-between;color:var(--mut);margin:6px 2px 12px}
+.coach{background:var(--acc);color:var(--accfg);border-radius:18px 18px 18px 4px;padding:16px 18px;margin:8px 0 6px}
+.coach b{font-family:"Manrope",system-ui,sans-serif}
+.m{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mh strong{font-size:1rem}
+.val{font-family:"Manrope",system-ui,sans-serif;font-weight:700;font-size:1.25rem}
+.g{position:relative;height:12px;border-radius:6px;background:var(--line);margin:12px 0 4px}
+.z{position:absolute;top:0;bottom:0;border-radius:6px;background:var(--zone)}
+.pin{position:absolute;top:-5px;width:6px;height:22px;border-radius:3px;background:var(--ink);transform:translateX(-3px)}
+.rng{color:var(--mut);font-size:.85rem}
+.st{font-weight:600;font-size:.9rem}
+.ok .st{color:var(--ok)}.warn .st{color:var(--warn)}.bad .st{color:var(--bad)}
+.why{margin:8px 0 0}
+.mv{margin:8px 0 0;padding:10px 12px;border-left:4px solid var(--warn);background:var(--bg);border-radius:0 10px 10px 0}
+details{margin-top:8px;color:var(--mut);font-size:.92rem}
+summary{cursor:pointer;min-height:32px}
+details#addwrap>summary,details#addwrap[open]>summary{margin-bottom:8px}#fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer}
+#fb{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:50;max-width:min(300px,calc(100vw - 32px));background:var(--card);border:1px solid var(--line);border-radius:14px 14px 4px 14px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.2);font-size:.92rem}
+#fb button{display:block;margin-top:8px;min-height:36px}
+.stepc{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}.stepn{flex:none;width:34px;height:34px;border-radius:50%;background:var(--acc);color:var(--accfg);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-weight:700}.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.fg label{font-size:.85rem;color:var(--mut)}.fg input{width:100%;display:block}[hidden]{display:none!important}input[type=range]{min-height:32px}.tabs{display:flex;gap:6px;margin:6px 0 10px}.tab{flex:1;min-height:44px;font-weight:600}.tab.on{background:var(--acc);color:var(--accfg);border-color:var(--acc)}#scm{white-space:pre-line;margin:8px 0 0}.note{color:var(--mut);font-size:.85rem;margin-top:22px}.cw{display:flex;gap:10px;align-items:flex-end;margin:8px 0 6px}.cw svg{flex:none}.cw .coach{margin:0;flex:1}.mn{grid-column:1/-1;color:var(--mut);font-size:.85rem}.mn input{width:84px;min-height:36px;padding:4px 8px}
+
+body{font-family:'Manrope',system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2{font-family:'Manrope',system-ui,sans-serif;font-weight:800;letter-spacing:-.02em}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+.logo h1{margin:0}.logo h1 b{color:var(--brand)}
+.m{border-radius:16px}
+button,select,input{border-radius:12px;font-family:inherit}
+button.p{font-weight:700}
+.tab{border-radius:12px}
+.coach{border-radius:18px 18px 18px 4px}
+.chip2[style*="--cc:var(--acc)"].on{color:var(--accfg)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fs{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<div class="logo"><svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><rect width="40" height="40" rx="12" style="fill:var(--acc)"/><path d="M13.5 21.5h13L20 34z" fill="#12332b"/><circle cx="20" cy="15.5" r="8" fill="#fff"/><circle cx="17.3" cy="13.4" r="1.6" fill="#a9e5cf"/></svg><h1>Punto<b>Maestro</b></h1><button id="thm" aria-label="Cambiar tema claro u oscuro" style="margin-left:auto;min-width:44px;min-height:44px">🌓</button></div>
+<p class="sub">Todo el proceso bajo control: de la receta perfectamente equilibrada a la venta del helado.</p>
+<div class="tabs" id="toptabs">
+<button class="tab on" data-l1="inicio">🏠 Inicio</button>
+<button class="tab" data-l1="recetas">🍨 Recetas</button>
+<button class="tab" data-l1="obrador">🏭 Mi obrador</button>
+</div>
+<div class="tabs" id="subrecetas" hidden>
+<button class="tab" data-l2="catalogo">📖 Catálogo</button>
+<button class="tab on" data-l2="crear">✏️ Crear receta</button>
+<button class="tab" data-l2="mis">📁 Mis recetas</button>
+<button class="tab" data-l2="comunidad">🌍 Comunidad</button>
+</div>
+<div class="tabs" id="subobrador" hidden>
+<button class="tab on" data-l2="stock">📦 Stock</button>
+<button class="tab" data-l2="maq">🧊 Máquinas</button>
+<button class="tab" data-l2="prod">🔄 Producción</button>
+</div>
+<div id="tt-inicio">
+<div class="cw"><svg viewBox="0 0 64 64" width="52" height="52" role="img" aria-label="Maestro heladero"><circle cx="32" cy="40" r="16" fill="#f6d3b3" stroke="#16303a" stroke-width="2"/><circle cx="22" cy="20" r="8" fill="#fff" stroke="#16303a" stroke-width="2"/><circle cx="32" cy="15" r="9" fill="#fff" stroke="#16303a" stroke-width="2"/><circle cx="42" cy="20" r="8" fill="#fff" stroke="#16303a" stroke-width="2"/><rect x="20" y="22" width="24" height="9" rx="2" fill="#fff" stroke="#16303a" stroke-width="2"/><circle cx="26" cy="38" r="2" fill="#16303a"/><circle cx="38" cy="38" r="2" fill="#16303a"/><path d="M22 45q10-5 20 0q-4 3-10 1q-6 2-10-1z" fill="#16303a"/><path d="M25 51q7 5 14 0" fill="none" stroke="#16303a" stroke-width="2.5" stroke-linecap="round"/></svg>
+<div class="coach">¡Hola! Soy tu maestro heladero. Te acompaño de punta a punta: desde equilibrar la receta hasta sacar el lote de la cámara de frío.</div></div>
+<div class="m" style="background:var(--acc);color:var(--accfg);border:none">
+<strong style="font-family:'Manrope',sans-serif;font-size:1.15rem">Balancear un helado, sin las cuentas</strong>
+<p style="margin:8px 0 0">Movés una barra y los gramos de tu receta se ajustan solos, en tiempo real. Nada de anotar fórmulas ni recalcular a mano cada vez que cambiás un ingrediente.</p>
+</div>
+<div class="m"><strong>De la receta a la venta, todo bajo control</strong>
+<div class="flow"><span class="fs">⚖️ Receta equilibrada</span><span class="fs">📝 Ficha y etiqueta</span><span class="fs">🧊 Maduración</span><span class="fs">🌀 Mantecado</span><span class="fs">❄️ Cámara de frío</span><span class="fs">🛒 A la venta</span></div>
+<p class="rng" style="margin:10px 0 0">Cada lote se sigue etapa por etapa, con su tiempo, hasta que sale de la cámara para venderse. Tu stock y tus costos van enlazados a cada receta.</p></div>
+<h2>Por qué PuntoMaestro</h2>
+<div class="m"><div class="mh"><span>🎚️ Balanceo casi automático</span></div><p class="rng" style="margin:4px 0 0">Arrastrás las barras y el motor recalcula los gramos de todos los ingredientes a la vez, respetando lo que ya fijaste. La mayoría de las calculadoras del mercado te obligan a ir probando a mano hasta que cierre.</p></div>
+<div class="m"><div class="mh"><span>🔄 Control absoluto del lote</span></div><p class="rng" style="margin:4px 0 0">De la receta a la ficha técnica, la etiqueta y la orden de producción — y de ahí a maduración, mantecado y cámara de frío, con el tiempo de cada etapa siempre a la vista.</p></div>
+<div class="m"><div class="mh"><span>📷 Escáner por foto</span></div><p class="rng" style="margin:4px 0 0">Sacale una foto a la etiqueta o al ticket de un producto y la app completa los datos: para sumar ingredientes nuevos al catálogo y para ingresar mercadería al stock, con cantidad y precio.</p></div>
+<div class="m"><div class="mh"><span>🧊 Calculadora de overrun por mantecadora</span></div><p class="rng" style="margin:4px 0 0">Cargás tu máquina y la app calcula cuántos litros de helado terminado vas a sacar de cada lote según el aire que incorpora, y te avisa si el lote supera su capacidad.</p></div>
+<div class="m"><div class="mh"><span>📦 Stock enlazado con costos</span></div><p class="rng" style="margin:4px 0 0">Lo que cargás en tu almacén, con el precio que pagaste, es lo que usa la receta para calcular su costo real y descontar lo consumido.</p></div>
+<div class="m"><div class="mh"><span>🌍 Pensada para heladeros hispanohablantes</span></div><p class="rng" style="margin:4px 0 0">Ingredientes, unidades y normativa de etiquetado de tu país — no una traducción de una app pensada para otro mercado.</p></div>
+<div class="m"><div class="mh"><span>👨‍🏫 Un maestro que se adapta a vos</span></div><p class="rng" style="margin:4px 0 0">Te explica el porqué de cada número si recién empezás, o va directo al grano si ya sos del oficio.</p></div>
+<h2>Todo lo que podés hacer acá</h2>
+<div class="m">
+<div class="mh"><span>⚖️ Equilibrar</span><span class="rng">sólidos, PAC, grasa, SLNG y dulzor, con barras o con gramos</span></div>
+<div class="mh"><span>📋 Partir de una base</span><span class="rng">recetas de crema, sorbete y veganas ya balanceadas</span></div>
+<div class="mh"><span>➕ Sumar tus ingredientes</span><span class="rng">escaneando la etiqueta o cargando la ficha técnica</span></div>
+<div class="mh"><span>📷 Escanear productos</span><span class="rng">etiquetas y tickets, para ingredientes y stock</span></div>
+<div class="mh"><span>🧊 Calcular el overrun</span><span class="rng">rendimiento en litros según tu mantecadora</span></div>
+<div class="mh"><span>💶 Calcular costos</span><span class="rng">por kg, por litro, por porción y tu margen, con tu stock real</span></div>
+<div class="mh"><span>📝 Guardar y producir</span><span class="rng">ficha de producción, etiqueta imprimible y seguimiento del lote</span></div>
+</div>
+<h2>Elegí tu nivel</h2>
+<p class="rng" style="margin:0 0 10px">El maestro te habla distinto según tu nivel: explicando cada paso si recién empezás, o al grano si ya lo tenés controlado.</p>
+<div class="bar" id="lvlw2" style="margin-bottom:16px"><button class="chip2 on" data-lv="principiante" style="--cc:var(--acc)">🌱 Principiante</button><button class="chip2" data-lv="maestro" style="--cc:var(--acc)">🎓 Maestro</button></div>
+
+<h2>Cómo se hace un helado, paso a paso</h2>
+<div class="stepc"><div class="stepn">1</div><div><strong>Pesar y organizar</strong><p class="rng" style="margin:4px 0">Pesar cada ingrediente con balanza de precisión, en el orden en que se van a usar.</p><p class="why" style="margin:0"><b>Por qué importa:</b> Un gramo de más o de menos ya cambia el equilibrio de azúcares y sólidos. Acá se define todo lo que viene después.</p></div></div><div class="stepc"><div class="stepn">2</div><div><strong>Mezclar y disolver</strong><p class="rng" style="margin:4px 0">Calentar la parte líquida y disolver ahí los sólidos: leche en polvo, azúcares y estabilizante.</p><p class="why" style="margin:0"><b>Por qué importa:</b> Si el estabilizante o la leche en polvo quedan en grumos, después aparecen en la textura final.</p></div></div><div class="stepc"><div class="stepn">3</div><div><strong>Pasteurizar</strong><p class="rng" style="margin:4px 0">Llevar la mezcla a la temperatura y el tiempo que indica tu normativa, y enfriarla rápido después.</p><p class="why" style="margin:0"><b>Por qué importa:</b> Elimina microorganismos y hace la mezcla segura. No es un paso opcional.</p></div></div><div class="stepc"><div class="stepn">4</div><div><strong>Madurar en frío</strong><p class="rng" style="margin:4px 0">Dejar descansar la mezcla entre 4 y 12 horas a 4 °C.</p><p class="why" style="margin:0"><b>Por qué importa:</b> El estabilizante y las proteínas terminan de hidratarse: eso da cuerpo y evita cristales grandes.</p></div></div><div class="stepc"><div class="stepn">5</div><div><strong>Mantecar</strong><p class="rng" style="margin:4px 0">Batir y congelar la mezcla al mismo tiempo, incorporando aire (overrun).</p><p class="why" style="margin:0"><b>Por qué importa:</b> Ahí se forman los cristales de hielo chiquitos que hacen que el helado sea cremoso y no helado.</p></div></div><div class="stepc"><div class="stepn">6</div><div><strong>Endurecer y conservar</strong><p class="rng" style="margin:4px 0">Bajar la temperatura a -18 °C lo antes posible y mantenerla estable.</p><p class="why" style="margin:0"><b>Por qué importa:</b> Un endurecido lento hace crecer los cristales de hielo: se pierde la cremosidad que se logró mantecando.</p></div></div><div class="stepc"><div class="stepn">7</div><div><strong>Servir</strong><p class="rng" style="margin:4px 0">Sacar el helado a -12/-14 °C, no más frío.</p><p class="why" style="margin:0"><b>Por qué importa:</b> A esa temperatura la grasa y el aire se sienten como corresponde. Más frío, y hasta la mejor receta sale dura.</p></div></div>
+
+<button class="p" id="gohacer" style="width:100%;margin-top:6px">Empezar mi receta →</button>
+</div>
+<div id="tt-crear" hidden>
+<div class="bar" id="lvlw" style="margin-bottom:10px"><button class="chip2 on" data-lv="principiante" style="--cc:var(--acc)">🌱 Principiante</button><button class="chip2" data-lv="maestro" style="--cc:var(--acc)">🎓 Maestro</button></div>
+<div class="bar" style="margin-bottom:6px"><input id="rn" oninput="this.style.borderColor=''" placeholder="Nombre de la receta" aria-label="Nombre de la receta" style="flex:1;min-width:0"><button class="p" id="rsv">Guardar receta</button></div>
+<p class="rng" id="rmsg" style="margin:0 0 8px"></p>
+<div class="bar">
+<select id="pais" aria-label="País"></select>
+<select id="base" aria-label="Tipo de base"><option value="crema">Helado de crema</option><option value="sorbete">Sorbete</option><option value="vegana">Crema vegana</option></select>
+</div>
+<h2>Cantidad final</h2>
+<div class="bar qty"><input id="q" type="number" min="0.1" step="0.5" inputmode="decimal" aria-label="Cantidad"><select id="u" aria-label="Unidad"><option value="kg">kg de mezcla</option><option value="L">litros de mezcla</option></select></div>
+<h2>Receta balanceada</h2>
+<div class="m" id="sug"></div>
+<div class="bar" id="presets" style="overflow-x:auto;flex-wrap:nowrap"></div>
+<h2>Tu mezcla</h2>
+<div id="rows"></div>
+<details id="addwrap"><summary>➕ Agregar ingrediente del listado</summary>
+<div class="bar" id="chips" style="margin-bottom:8px"></div>
+<div class="bar"><select id="add" aria-label="Ingrediente a agregar"></select><button class="p" id="addb">Agregar ingrediente</button></div>
+</details>
+
+
+<div class="tot"><span>Peso total</span><strong id="tot"></strong></div>
+
+
+<h2>Costos</h2>
+<div class="m"><div id="cpr"></div>
+<div class="fg"><label>Porción (g de mezcla)<input id="pg" type="number" inputmode="decimal"></label><label>Precio de venta por porción<input id="pv" type="number" inputmode="decimal"></label></div>
+<div id="csm" style="margin-top:10px"></div></div>
+
+<details id="rgwrap" style="margin:8px 0 16px"><summary>⚙️ Ajustar mis rangos ideales</summary>
+<p class="rng" style="margin:8px 0">Valen solo para el tipo de helado que tenés elegido ahora (crema, sorbete, etc.). Dejalo así si no estás seguro.</p>
+<div id="rgrows"></div>
+<div class="bar"><button class="p" id="rgsv">Guardar mis rangos</button><button id="rgrs">Volver a los de fábrica</button></div>
+<p class="rng" id="rgmsg" style="margin:8px 0 0"></p>
+</details>
+<h2>Barras de balance</h2>
+<p class="rng" style="margin:0 0 10px">Movelas y los gramos se ajustan solos. Si editás los gramos, las barras te siguen. Cada barra llega hasta el rango ideal.</p>
+<div class="m" id="sl"></div>
+<p class="rng" id="slm"></p>
+<h2>Lo que dice el maestro</h2>
+<div class="cw"><svg viewBox="0 0 64 64" width="60" height="60" role="img" aria-label="Maestro heladero"><circle cx="32" cy="40" r="16" fill="#f6d3b3" stroke="#16303a" stroke-width="2"/><circle cx="22" cy="20" r="8" fill="#fff" stroke="#16303a" stroke-width="2"/><circle cx="32" cy="15" r="9" fill="#fff" stroke="#16303a" stroke-width="2"/><circle cx="42" cy="20" r="8" fill="#fff" stroke="#16303a" stroke-width="2"/><rect x="20" y="22" width="24" height="9" rx="2" fill="#fff" stroke="#16303a" stroke-width="2"/><circle cx="26" cy="38" r="2" fill="#16303a"/><circle cx="38" cy="38" r="2" fill="#16303a"/><path d="M22 45q10-5 20 0q-4 3-10 1q-6 2-10-1z" fill="#16303a"/><path id="mo" d="M25 51q7 5 14 0" fill="none" stroke="#16303a" stroke-width="2.5" stroke-linecap="round"/></svg><div class="coach" id="coach"></div></div>
+<div id="mets"></div>
+<h2>Ficha de producción</h2>
+<div class="m"><label class="rng" style="display:block;margin-bottom:8px">Vida útil del lote en días (para calcular el vencimiento)<input id="fvd" type="number" min="0" inputmode="numeric" style="width:100%"></label><button class="p" id="fbt" style="width:100%">Ver ficha de esta receta</button><div id="fch" hidden style="white-space:pre-wrap;margin-top:12px"></div><button id="fcp" hidden style="width:100%;margin-top:8px">Copiar ficha</button><button id="fpr" hidden style="width:100%;margin-top:8px">🖨️ Imprimir etiqueta de lote</button><button id="fprod" hidden style="width:100%;margin-top:8px">📋 Enviar a producción (arrancar maduración)</button><p class="rng" id="fms" style="margin:8px 0 0"></p></div>
+</div>
+<div id="tt-mis" hidden>
+<p class="rng" style="margin:0 0 10px">Tus recetas guardadas. Tocá "Abrir" para volver a editarlas en "Crear receta".</p>
+<div id="rl"></div>
+</div>
+<div id="tt-catalogo" hidden>
+<p class="rng" style="margin:0 0 10px">Sumá un ingrediente que no está en el listado, con su ficha técnica o escaneando la etiqueta. Queda disponible para usar en cualquier receta, en su categoría.</p>
+<div class="m"><p class="rng" style="margin:0 0 8px">Escaneá la etiqueta de tu producto o partí de un ingrediente y ajustá los valores de tu marca (por 100 g). Se guarda con tu nombre en la categoría que elijas.</p>
+
+<p class="rng" style="margin:0 0 10px">Cargá los datos de la etiqueta del producto (por 100 g) para calcular sus valores.</p>
+<div class="fg" style="margin-bottom:8px"><label>Grasa (g)<input id="mf" type="number" inputmode="decimal"></label><label>Hidratos (g)<input id="mc" type="number" inputmode="decimal"></label><label>Azúcares (g)<input id="ms" type="number" inputmode="decimal"></label><label>Proteínas (g)<input id="mp" type="number" inputmode="decimal"></label></div>
+<input id="mi" style="width:100%;margin-bottom:8px" placeholder="Ingredientes (opcional): leche en polvo, azúcar, cacao…" aria-label="Ingredientes">
+<button id="mgo" style="width:100%;margin-bottom:6px">Calcular desde la etiqueta (por 100 g)</button>
+<p class="rng" id="mmsg" style="white-space:pre-line;margin:0 0 10px"></p>
+<div class="bar"><select id="cb" aria-label="Partir de"></select><input id="cn" placeholder="Nombre (ej. Chocolate suizo 70%)" aria-label="Nombre"></div>
+<div class="bar" style="margin-top:8px"><select id="cc" aria-label="Categoría"></select></div>
+<div class="fg"><label>Grasa %<input id="cf" type="number" inputmode="decimal"></label><label>SLNG %<input id="cm" type="number" inputmode="decimal"></label><label>Sólidos totales %<input id="cs" type="number" inputmode="decimal"></label><label>PAC<input id="cp" type="number" inputmode="decimal"></label><label>POD<input id="cd" type="number" inputmode="decimal"></label><label>Dosis mín. g/kg<input id="cl" type="number" inputmode="decimal"></label><label>Dosis máx. g/kg<input id="ch" type="number" inputmode="decimal"></label></div>
+<button class="p" id="csv" style="width:100%;margin-top:10px">Guardar ingrediente</button><p class="rng" id="cmsg" style="margin:8px 0 0"></p></div>
+
+</div>
+
+<div id="tt-comunidad" hidden>
+<p class="rng" style="margin:0 0 10px">Puntos de partida balanceados con los valores genéricos del catálogo. Usalos como base y ajustalos con tus ingredientes reales. "Sin gluten" se basa en ingredientes genéricos: verificá siempre las etiquetas de tus productos.</p>
+<div class="bar" id="rf" style="margin-bottom:10px"></div><div id="rc"></div>
+</div>
+<div id="tt-stock" hidden>
+<p class="rng" style="margin:0 0 10px">Llevá el control de lo que tenés en el obrador. Cuando termines un lote, descontalo de acá.</p>
+<div class="m">
+<div class="bar"><select id="sadd" aria-label="Ingrediente"></select></div>
+<div class="fg" style="margin-top:8px"><label>Cantidad<input id="sq" type="number" min="0" inputmode="decimal"></label><label>Unidad<select id="su"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option></select></label><label>Aviso si baja de<input id="sm" type="number" min="0" inputmode="decimal" placeholder="opcional"></label><label>Precio pagado (por kg o L)<input id="sp" type="number" min="0" inputmode="decimal" placeholder="opcional"></label></div>
+<button class="p" id="ssv" style="width:100%;margin-top:10px">Guardar en stock</button></div>
+<div id="stocklist"></div>
+<p class="rng" id="smsg" style="margin:8px 0 0">El stock se descuenta solo cuando enviás un lote a producción.</p>
+</div>
+<div id="tt-maq" hidden>
+<p class="rng" style="margin:0 0 10px">Cargá tu mantecadora para que el maestro calcule cuánto helado terminado vas a sacar de cada lote, según el aire que incorpora (overrun) tu máquina.</p>
+<div class="m"><div class="bar"><select id="mmarca" aria-label="Marca"></select></div>
+<div class="fg" style="margin-top:8px"><label>Nombre/alias<input id="mnom" placeholder="Ej. La de la izquierda"></label><label>Overrun mín %<input id="movmin" type="number" min="0"></label><label>Overrun máx %<input id="movmax" type="number" min="0"></label><label>Temp. salida mín °C<input id="mtmin" type="number"></label><label>Temp. salida máx °C<input id="mtmax" type="number"></label><label>Capacidad por lote (L)<input id="mcap" type="number" min="0"></label></div>
+<button class="p" id="msv" style="width:100%;margin-top:10px">Guardar máquina</button></div>
+<div class="m"><label class="rng">Tamaño de pote/tarrina para contar unidades (ml)<input id="mpote" type="number" min="1" style="width:100%"></label></div>
+<div id="maqlist"></div>
+<div class="m" id="maqyield"></div>
+</div>
+<div id="tt-prod" hidden>
+<p class="rng" style="margin:0 0 10px">Cada lote que mandás a producción pasa por estas etapas. Pasteurizar es inmediato y no se cuenta acá: el reloj arranca en maduración.</p>
+<p class="rng" id="pmsg" style="margin:0 0 10px"></p><h2>🧊 Maduración</h2><div id="lmad"></div>
+<h2>🌀 Mantecando</h2><div id="lprod"></div>
+<h2>❄️ Cámara de frío (terminado)</h2><div id="lcam"></div>
+</div>
+
+<p class="note">Rangos de referencia de trabajo para empezar. Los valores de cada ingrediente son aproximados: en la versión final se editan según tu proveedor y tu estilo.</p>
+<button id="fab" aria-label="Abrir al maestro heladero">🍨</button>
+<div id="fb" hidden></div>
+</main>
+<div id="lbl"></div>
+<script>
+const ING={leche:{f:3.6,m:8.7,s:12.3,pac:4.8,pod:.8},nata:{f:35,m:5.6,s:40.6,pac:3.1,pod:.5},polvo:{f:1,m:96,s:97,pac:52,pod:8.3},sac:{f:0,m:0,s:100,pac:100,pod:100},dex:{f:0,m:0,s:92,pac:175,pod:64},yema:{f:30,m:0,s:50,pac:0,pod:0},neutro:{f:0,m:0,s:100,pac:0,pod:0},fruta:{f:0,m:0,s:9,pac:8,pod:7,fl:1,tip:'La fruta aporta mucha agua y pocos sólidos: por eso suele hacer falta más azúcar y sólidos para que no quede helada y áspera.'},dulce:{f:6,m:11,s:72,pac:55,pod:55,fl:1,tip:'Cuento el dulce de leche como azúcar y sólidos a la vez: por eso, en la receta balanceada, bajo el azúcar común.'},choc:{f:40,m:0,s:99,pac:28,pod:28,fl:1,tip:'El chocolate amargo aporta grasa y sólidos: si se suma más, conviene bajar la crema.'},chocl:{f:32,m:10,s:99,pac:58,pod:52,fl:1,tip:'El chocolate con leche suma grasa, azúcar y lácteos a la vez: lo descuento de todo lo demás.'},cacao:{f:11,m:0,s:97,pac:0,pod:0,fl:1,tip:'El cacao en polvo suma sólidos sin grasa y amargor: pide un poco más de azúcar para que no quede seco.'},pist:{f:50,m:0,s:97,pac:8,pod:8,fl:1,tip:'La pasta de frutos secos es muy grasa: al usarla, bajo la crema.'},agua:{f:0,m:0,s:0,pac:0,pod:0}};
+const BASE={leche:'Leche entera',nata:'Crema de leche',polvo:'Leche en polvo descremada',sac:'Azúcar (sacarosa)',dex:'Dextrosa',yema:'Yema de huevo',neutro:'Estabilizante (neutro)',fruta:'Fruta',dulce:'Dulce de leche',agua:'Agua',choc:'Chocolate amargo 70%',chocl:'Chocolate con leche',cacao:'Cacao amargo en polvo',pist:'Pasta de pistacho'};
+const PAISES={AR:{n:'Argentina',vos:1,w:{fruta:'Frutilla'}},UY:{n:'Uruguay',vos:1,w:{fruta:'Frutilla'}},ES:{n:'España',w:{nata:'Nata (35% MG)',fruta:'Fresa',polvo:'Leche desnatada en polvo'}},MX:{n:'México',w:{nata:'Crema para batir',fruta:'Fresa',dulce:'Cajeta / dulce de leche'}},CL:{n:'Chile',w:{nata:'Crema',fruta:'Frutilla',dulce:'Manjar'}},CO:{n:'Colombia',w:{fruta:'Fresa',dulce:'Arequipe'}},PE:{n:'Perú',w:{fruta:'Fresa',dulce:'Manjar blanco'}},EC:{n:'Ecuador',w:{fruta:'Fresa',dulce:'Manjar de leche'}},BO:{n:'Bolivia',vos:1,w:{fruta:'Frutilla'}},PY:{n:'Paraguay',w:{fruta:'Frutilla'}},US:{n:'Estados Unidos',w:{fruta:'Strawberry / fresa',dulce:'Dulce de leche'}}};
+Object.assign(ING,{c811:{f:37,m:0,s:99,pac:45,pod:45,fl:1,tip:'El Callebaut 811 tiene unos 37% de grasa y cerca de 45% de azúcar: aporta más dulzor y PAC que un chocolate 70%.'},chocb:{f:32,m:14,s:99,pac:62,pod:56,fl:1,tip:'El chocolate blanco es grasa, azúcar y leche a la vez: sube dulzor y grasa.'},banana:{f:.3,m:0,s:25,pac:17,pod:13,fl:1,tip:'La banana aporta azúcares y sólidos, pero se oxida: conviene usarla fresca y con un toque de limón.'},mani:{f:50,m:0,s:98,pac:9,pod:9,fl:1,tip:'La pasta de maní es muy grasa: al usarla, bajo la crema.'},avell:{f:62,m:0,s:98,pac:5,pod:5,fl:1,tip:'La pasta de avellana tiene más grasa que la de pistacho: bajo la crema para compensar.'}});
+Object.assign(BASE,{c811:'Chocolate Callebaut 811 (54,5%)',chocb:'Chocolate blanco',banana:'Banana (pulpa)',mani:'Pasta de maní',avell:'Pasta de avellana'});
+const DOSE={fruta:[200,400],dulce:[50,150],choc:[40,120],chocl:[60,150],cacao:[20,50],pist:[40,100],c811:[40,120],chocb:[40,100],banana:[150,300],mani:[40,100],avell:[40,100]};
+Object.entries(DOSE).forEach(([k,d])=>ING[k].d=d);
+const CAT={leche:'L',nata:'L',polvo:'L',sac:'A',dex:'A',yema:'H',neutro:'H',fruta:'F',dulce:'D',agua:'O',choc:'C',chocl:'C',cacao:'C',pist:'N',c811:'C',chocb:'C',banana:'F',mani:'N',avell:'N'};
+const CATN={L:'Lácteos',V:'Leches vegetales',A:'Azúcares y edulcorantes',E:'Estabilizantes y emulsionantes',H:'Huevos',C:'Chocolates y cacao',D:'Dulces, cremas y galletas',N:'Frutos secos y pastas',F:'Frutas',K:'Café, té e infusiones',Q:'Licores y vinos',P:'Especias y aromas',O:'Otros',U:'Mis ingredientes'};
+const CCOL={L:'#4c8fd6',V:'#5aa469',A:'#e0a13a',E:'#8b6fc4',H:'#e6c23a',C:'#8a5a3c',D:'#d9773a',N:'#b9925e',F:'#d24a5c',K:'#3d8f8a',Q:'#b04a86',P:'#7a9a3c',O:'#7b8794',U:'#3f8a4f'};
+`lsemi;Leche semidesnatada;L;1.6;8.8;10.4;4.8;.8;0;0;.9;
+ldes;Leche desnatada;L;.1;9;9.1;4.9;.8;0;0;.9;
+n18;Crema/nata 18% MG;L;18;6.8;24.8;3.8;.6;0;0;.4;
+lpe;Leche en polvo entera;L;26;68;96;37;6;0;0;.12;
+lcond;Leche condensada azucarada;L;8;20;74;55;46;0;0;.2;
+levap;Leche evaporada;L;7.5;17.5;25;8.5;1.4;0;0;.4;
+yog;Yogur natural;L;3.2;9;12.5;4.7;.8;0;0;.5;
+qcrema;Queso crema;L;33;6;42;3;.5;0;0;.2;
+masc;Mascarpone;L;42;4;47;2.5;.4;0;0;.25;
+ricota;Ricota;L;13;12;28;2.5;.4;0;0;.25;
+manteca;Manteca / mantequilla;L;82;1.5;84;.6;.1;0;0;.08;
+suero;Suero de leche en polvo;L;1;95;96;73;12;0;0;.06;
+lcoco;Leche de coco (lata);L;17;0;23;3;2.5;0;0;.5;
+fruc;Fructosa;A;0;0;100;190;170;0;0;.06;
+jglu;Jarabe de glucosa DE 40;A;0;0;80;60;35;0;0;.12;Los jarabes varían según el DE y la marca: conviene cargar los valores de tu ficha.
+maltod;Maltodextrina DE 19;A;0;0;96;22;12;0;0;.08;
+inv;Azúcar invertido (trimoline);A;0;0;77;146;96;0;0;.1;
+miel;Miel;A;0;0;82;150;110;0;0;.08;
+agave;Sirope de agave;A;0;0;76;144;106;0;0;.08;
+arce;Sirope de arce;A;0;0;67;67;65;0;0;.1;
+mor;Azúcar moreno / panela;A;0;0;98;98;95;0;0;.25;
+sorb;Sorbitol;A;0;0;100;190;60;0;0;.05;Los polioles bajan mucho el punto de congelación y en exceso son laxantes: usalos con cuidado.
+erit;Eritritol;A;0;0;100;280;70;0;0;.05;Los polioles bajan mucho el punto de congelación y en exceso son laxantes: usalos con cuidado.
+hue;Huevo entero;H;10;0;25;0;0;0;0;.15;
+clara;Clara de huevo;H;0;0;12;0;0;0;0;.1;
+c823;Chocolate con leche Callebaut 823 (33,6%);C;36.2;15.8;99;51;43;40;120;;Callebaut 823: unos 36% de grasa y 22% de leche en polvo entera: suma grasa, lácteos y azúcar a la vez.
+cw2;Chocolate blanco Callebaut W2 (28%);C;35.8;16.7;99;56;48;40;100;;Callebaut W2: mucha grasa (cacao y leche) y bastante azúcar: sube dulzor y grasa.
+c7030;Chocolate amargo Callebaut 70-30-38 (70,5%);C;38.9;0;99;29;29;40;120;;
+pcac;Pasta de cacao 100%;C;54;0;98;0;0;20;60;;La pasta de cacao aporta grasa y sólidos sin nada de dulzor: hará falta más azúcar.
+mcac;Manteca de cacao;C;100;0;100;0;0;10;40;;
+dser;Dulce de leche La Serenísima repostero;D;7;17;70;55;45;50;150;;Etiqueta: 7% de grasa y 55% de azúcares. El SLNG y el POD son estimados.
+nut;Crema de avellana y cacao (tipo Nutella);D;31;6;99;58;54;40;120;;
+carm;Salsa de caramelo;D;8;3;78;68;58;40;120;;
+merm;Mermelada;D;0;0;68;75;65;40;150;;
+alm;Pasta de almendra;N;52;0;98;4;4;40;100;;
+nuez;Pasta de nuez;N;65;0;97;3;3;40;100;;
+tahini;Tahini (pasta de sésamo);N;54;0;98;.5;.5;20;60;;
+coco;Coco rallado;N;62;0;97;7;7;30;100;;
+fram;Frambuesa;F;0;0;14;7;5.5;150;400;
+ara;Arándano;F;0;0;16;16;12.5;150;400;
+mango;Mango;F;0;0;17;22;17.5;150;400;
+mara;Maracuyá (pulpa);F;0;0;26;18;14;80;250;
+lim;Zumo de limón;F;0;0;8;4;3;50;300;
+nar;Zumo de naranja;F;0;0;11;13;10.5;100;400;
+pina;Piña;F;0;0;14;16;12.5;150;400;
+dur;Durazno / melocotón;F;0;0;11;13;10.5;150;400;
+manz;Manzana;F;0;0;14;17;13;150;400;
+pera;Pera;F;0;0;16;16;12;150;400;
+uva;Uva;F;0;0;19;26;20;150;400;
+kiwi;Kiwi;F;0;0;17;14;11;150;400;
+sand;Sandía;F;0;0;9;10;7.5;200;500;
+mel;Melón;F;0;0;9;13;10;200;500;
+cer;Cereza;F;0;0;18;20;16;150;400;
+higo;Higo;F;0;0;21;26;20;100;300;
+aguac;Aguacate / palta;F;15;0;27;1;1;100;250;El aguacate aporta grasa y cuerpo: al usarlo, bajo la crema.
+cafe;Café soluble;O;.5;0;97;0;0;5;20;;
+matcha;Té matcha;O;5;0;95;0;0;8;30;;
+alc;Licor / ron / whisky (40% vol.);O;0;0;0;250;0;5;40;;El alcohol baja muchísimo el punto de congelación: con 3 o 4% de alcohol en la mezcla, el helado ya no endurece.
+aceite;Aceite de oliva;O;100;0;100;0;0;10;60;;`.trim().split('\n').forEach(l=>{const [id,n,c,f,m,s,p,o,dn,dx,cp,tp]=l.split(';');ING[id]={f:+f,m:+m,s:+s,pac:+p,pod:+o};if(+dx>0){ING[id].fl=1;ING[id].d=[+dn,+dx]}if(+cp)ING[id].cap=+cp;if(tp)ING[id].tip=tp;BASE[id]=n;CAT[id]=c});
+Object.assign(ING.c811,{f:36.6,tip:'Callebaut 811: unos 37% de grasa y cerca de 45% de azúcar, más dulce y menos amargo que un 70%.'});BASE.c811='Chocolate amargo Callebaut 811 (54,5%)';BASE.fruta='Fresa';ING.leche.cap=ING.agua.cap=.9;
+`bufala;Leche de búfala;L;6.5;9;15.5;4.8;.8;0;0;.9;
+cabra;Leche de cabra;L;3.8;8.6;12.4;4.4;.7;0;0;.9;
+oveja;Leche de oveja;L;6.5;10;16.5;4.8;.8;0;0;.9;
+lsl;Leche entera sin lactosa;L;3.6;8.7;12.3;9;2.4;0;0;.9;Sin lactosa: la lactosa se rompe en glucosa y galactosa, más dulces y más anticongelantes: el helado sale más blando y dulce.
+ygr;Yogur griego;L;10;7;19;3.5;.6;0;0;.4;
+avena;Bebida de avena;V;1.5;0;11;5;1.6;0;0;.9;Las bebidas vegetales cambian mucho según la marca: conviene escanear la etiqueta de la tuya.
+soja;Bebida de soja sin azúcar;V;1.8;0;7;1;.4;0;0;.9;
+almm;Bebida de almendra sin azúcar;V;1.2;0;3.5;.5;.3;0;0;.9;
+arroz;Bebida de arroz;V;1;0;11;9;3.5;0;0;.9;
+cocol;Bebida de coco;V;1.5;0;3;1;.8;0;0;.9;
+lact;Lactosa;A;0;0;100;100;16;0;0;.05;
+trehal;Trehalosa;A;0;0;92;92;41;0;0;.08;
+xili;Xilitol;A;0;0;100;225;100;0;0;.05;Los polioles bajan mucho el punto de congelación y en exceso son laxantes: usalos con cuidado.
+maltit;Maltitol;A;0;0;100;100;90;0;0;.08;
+lbg;Goma garrofín / algarrobo (E410);E;0;0;88;0;0;1;4;;Da cuerpo y evita cristales grandes: funciona mejor combinada con guar o carragenina.
+guar;Goma guar (E412);E;0;0;90;0;0;.5;3;;Espesa en frío y retiene agua: es la base de muchas mezclas de estabilizantes.
+carra;Carragenina (E407);E;0;0;88;0;0;.2;2;;Evita que el suero se separe y trabaja muy bien junto a la goma garrofín.
+xan;Goma xantana (E415);E;0;0;90;0;0;.5;2;;
+cmc;CMC / carboximetilcelulosa (E466);E;0;0;92;0;0;1;3;;
+pect;Pectina (E440);E;0;0;90;0;0;1;5;;
+alg;Alginato de sodio (E401);E;0;0;90;0;0;1;3;;
+agar;Agar-agar (E406);E;0;0;90;0;0;1;3;;
+tara;Goma tara (E417);E;0;0;88;0;0;1;4;;
+arab;Goma arábiga (E414);E;0;0;90;0;0;3;10;;
+gel;Gelatina (grenetina);E;0;0;90;0;0;2;5;;La gelatina es proteína animal: aporta cuerpo y textura cremosa.
+mcc;Celulosa microcristalina (E460);E;0;0;96;0;0;1;10;;
+inul;Inulina (fibra de achicoria);E;0;0;95;15;10;20;50;;Valores aproximados: cambian según el grado de polimerización de tu inulina.
+almod;Almidón de maíz / modificado;E;0;0;88;0;0;10;30;;
+mdg;Mono y diglicéridos (E471);E;95;0;100;0;0;1;3;;Emulsionante: reparte bien la grasa y da un helado más seco y estable al derretirse.
+lec;Lecitina de soja (E322);E;60;0;98;0;0;1;3;;
+pol80;Polisorbato 80 (E433);E;0;0;100;0;0;.2;1;;
+neutrof;Neutro para frutas y sorbetes;E;0;0;100;0;0;4;8;;
+cacao22;Cacao en polvo 22-24% grasa;C;22;0;97;0;0;20;50;;
+nibs;Nibs de cacao;C;50;0;98;0;0;20;60;;
+galleta;Galleta molida (tipo cookie);D;20;0;96;35;35;30;100;;
+pral;Praliné de avellana;D;31;0;99;50;50;40;120;;
+marz;Mazapán / pasta de almendra azucarada;D;26;0;92;45;45;40;120;;
+cajua;Pasta de anacardo;N;47;0;96;5;5;40;100;;
+macad;Pasta de macadamia;N;76;0;98;3;3;40;100;;
+mora;Mora;F;0;0;12;8;6;150;400;
+ciru;Ciruela;F;0;0;13;16;12.5;150;400;
+pomelo;Pomelo (jugo);F;0;0;11;11;9;100;400;
+mand;Mandarina;F;0;0;14;14;11;100;400;
+gran;Granada;F;0;0;19;21;16;100;400;
+lichi;Lichi;F;0;0;18;24;19;150;400;
+guay;Guayaba;F;0;0;20;14;11;150;400;
+papa;Papaya;F;0;0;11;13;10;150;400;
+dat;Dátil;F;0;0;80;105;80;30;100;;
+pasa;Pasas de uva;F;0;0;80;95;70;30;100;;
+dam;Damasco / albaricoque;F;0;0;14;14;11;150;400;
+lima;Zumo de lima;F;0;0;8;3;2.2;50;250;
+tam;Tamarindo (pulpa);F;0;0;45;55;45;20;80;
+espr;Café espresso;K;0;0;1.5;0;0;40;200;;
+vino;Vino dulce / Marsala (17% vol.);Q;0;0;8;112;8;20;80;;El alcohol baja muchísimo el punto de congelación: con 3 o 4% de alcohol en la mezcla, el helado ya no endurece.
+lcrem;Licor cremoso (tipo Baileys);Q;13;3;40;125;25;20;80;;El alcohol baja muchísimo el punto de congelación: con 3 o 4% de alcohol en la mezcla, el helado ya no endurece.
+amar;Licor dulce (tipo amaretto);Q;0;0;30;193;30;10;60;;El alcohol baja muchísimo el punto de congelación: con 3 o 4% de alcohol en la mezcla, el helado ya no endurece.
+vain;Pasta de vainilla;P;0;0;55;45;45;3;15;;
+can;Canela molida;P;0;0;95;0;0;2;8;;
+sanig;Dulce de leche heladero San Ignacio (AR);D;3.5;0;70;55;52;50;150;;Clásico argentino de referencia en heladería, sabor intenso y buen cuerpo para congelar.
+sembrar;Dulce de leche "para sembrar" San Ignacio (AR);D;3.5;0;70;52;50;30;80;;No se disuelve del todo en la mezcla: se usa para sembrar vetas, cintas o efecto marmolado, no como el dulce de leche base de la receta.
+baltar;Dulce de leche heladero Casa Baltar (ES);D;4.6;0;67;63;51;50;150;;Elaborado con leche fresca gallega, sabor equilibrado y poco empalagoso, pensado para heladería profesional.
+chirimoya;Chirimoya;F;0.3;0;20;20;17;150;400;;Típica del sur de España (Málaga, Granada) y de los Andes. Textura cremosa, ideal para helado de crema.
+caqui;Caqui / Persimon;F;0.2;0;18.6;18.6;14;150;400;;Kilómetro cero en la Ribera del Xúquer (Valencia) y zonas cercanas a Alicante.
+nisp;Níspero;F;0.2;0;13;12;10;150;400;;Kilómetro cero de Callosa d'en Sarrià (Alicante), con Denominación de Origen.
+lucuma;Lúcuma;F;0.5;0;25;20;15;150;400;;Fruta andina (Perú, Ecuador, Chile), pulpa seca y poco dulce con sabor a caramelo/maple.
+uchuva;Uchuva / Aguaymanto / Physalis;F;0.2;0;16;15;12;100;300;;Típica de Colombia, Perú y Ecuador.
+feijoa;Feijoa;F;0.4;0;13;12;10;100;300;;Muy popular en Colombia, sabor entre guayaba y piña.
+lulo;Lulo / Naranjilla;F;0.2;0;7;6;4;150;400;;Típico de Colombia y Ecuador, muy ácido: suele combinarse con más azúcar o fruta dulce.
+guanabana;Guanábana / Graviola;F;0.3;0;17;16;13;150;400;;Muy usada en Colombia, Perú y México.
+pitahaya;Pitahaya / Fruta del dragón;F;0.4;0;13;11;8;150;400;;Se cultiva en varios países de Latinoamérica.
+tuna;Tuna (fruto del nopal);F;0.5;0;14;13;10;150;400;;Kilómetro cero en México y otras zonas semiáridas de Latinoamérica.
+chia;Semillas de chía;N;30.7;0;94;0;0;10;40;;Aportan textura y nutrientes; a dosis altas espesan mucho por su capacidad de absorber agua.
+aqua;Aquafaba (líquido de garbanzos);E;0;0;6;0;0;30;100;;Sustituto vegano de la clara de huevo: ayuda a airear la mezcla sin usar huevo.
+tofuse;Tofu sedoso;V;3;0;8;0;0;30;100;;Aporta cremosidad y proteína en recetas 100% veganas, sin sabor propio marcado.
+algarr;Algarroba en polvo;C;0.7;0;95;40;45;20;60;;Alternativa vegana y sin cafeína al cacao, más dulce y menos amarga.`.trim().split('\n').forEach(l=>{const [id,n,c,f,m,s,p,o,dn,dx,cp,tp]=l.split(';');ING[id]={f:+f,m:+m,s:+s,pac:+p,pod:+o};if(+dx>0){ING[id].fl=1;ING[id].d=[+dn,+dx]}if(+cp)ING[id].cap=+cp;if(tp)ING[id].tip=tp;BASE[id]=n;CAT[id]=c});
+Object.assign(CAT,{neutro:'E',cafe:'K',matcha:'K',alc:'Q'});BASE.neutro='Neutro para crema (mezcla de estabilizantes)';
+Object.keys(ING).filter(k=>CAT[k]==='E').forEach(k=>ING[k].tl='Sobre el estabilizante');
+const catOf=k=>CAT[k]||'U';
+const OPT=(sel,only)=>Object.entries(CATN).filter(([c])=>!only||c===only).map(([c,t])=>{const ks=Object.keys(ING).filter(k=>catOf(k)===c);return ks.length?`<optgroup label="${t}">${ks.map(k=>`<option value="${k}"${k===sel?' selected':''}>${nm(k)}</option>`).join('')}</optgroup>`:''}).join('');
+const R={crema:{f:[6,10],m:[8,11],s:[36,40],pac:[240,280],pod:[130,180]},sorbete:{f:[0,2],m:[0,2],s:[28,34],pac:[280,340],pod:[170,220]},vegana:{f:[6,10],m:[0,2],s:[36,40],pac:[240,280],pod:[130,180]}};
+const INFO={
+s:{t:'Sólidos totales',u:'%',what:'Todo lo que no es agua. Cuanta menos agua libre, menos cristales de hielo.',lo:'Queda mucha agua libre: cristales de hielo grandes, textura áspera y se derrite rápido.',hi:'Demasiado denso: sale pastoso y cuesta servirlo.'},
+pac:{t:'Poder anticongelante (PAC)',u:'',what:'Cuánto baja el punto de congelación el conjunto de azúcares. Define qué tan blando o duro está a la temperatura de servicio.',lo:'Sale duro como piedra y no se puede sacar bocha.',hi:'Queda demasiado blando: se derrite enseguida y no aguanta en el cono.'},
+f:{t:'Materia grasa',u:'%',what:'Aporta cremosidad y cuerpo. Es lo que hace que se sienta sedoso en boca.',lo:'Menos cremoso, más frío al paladar y con sabor corto.',hi:'Se siente pesado y grasoso, y puede empezar a formar manteca en la máquina.'},
+m:{t:'Sólidos lácteos no grasos',u:'%',what:'Proteínas y lactosa de la leche: dan cuerpo y retienen agua.',lo:'Textura floja y aguada.',hi:'Riesgo de arenosidad: la lactosa sobrante puede cristalizar.'},
+pod:{t:'Poder edulcorante (POD)',u:'',what:'Dulzor total comparado con la sacarosa (que vale 100).',lo:'Poco dulce: el sabor queda apagado.',hi:'Empalagoso: tapa el sabor y cansa.'}};
+const ORDER=['s','pac','f','m','pod'];
+let st={pais:'AR',base:'crema',rec:[['leche',675],['nata',100],['polvo',40],['sac',140],['dex',40],['neutro',5]]};
+try{const x=JSON.parse(localStorage.getItem('bh')||'null');if(x&&x.rec)st=x}catch(e){}
+st.q=st.q||1;st.u=st.u||'kg';st.customR=st.customR||{};function curR(){const d=R[st.base]||R.crema,o=st.customR[st.base];return o?{f:o.f||d.f,m:o.m||d.m,s:o.s||d.s,pac:o.pac||d.pac,pod:o.pod||d.pod}:d}st.level=st.level||'principiante';st.custom=st.custom||{};st.saved=st.saved||[];st.openIdx=st.openIdx===undefined?-1:st.openIdx;st.price=st.price||{};st.pg=st.pg||100;Object.entries(st.custom).forEach(([k,v])=>{ING[k]=v;BASE[k]=v.name+(v.ver?' ✓':'');CAT[k]=v.cat||'U'});
+const $=id=>document.getElementById(id);
+const TG=()=>st.u==='L'?st.q*1070:st.q*1000;
+const P=()=>PAISES[st.pais]||PAISES.AR;
+const nm=k=>(P().w&&P().w[k])||BASE[k];
+const V=(a,b)=>P().vos?a:b;
+const sv=()=>{try{localStorage.setItem('bh',JSON.stringify(st))}catch(e){}};
+function calc(rec=st.rec){let T=0,a={f:0,m:0,s:0,pac:0,pod:0};rec.forEach(([k,g])=>{g=+g||0;T+=g;const i=ING[k];a.f+=g*i.f;a.m+=g*i.m;a.s+=g*i.s;a.pac+=g*i.pac;a.pod+=g*i.pod});
+if(!T)return{T:0,c:a};return{T,c:{f:a.f/T,m:a.m/T,s:a.s/T,pac:a.pac/100*1000/T,pod:a.pod/100*1000/T}}}
+function move(k,dir,c,T){if(st.base==='vegana'&&(k==='f'||k==='m'||k==='s'))return V('Ajustá','Ajusta')+' la leche de coco (grasa), la bebida vegetal y la maltodextrina (sólidos).';const r=curR()[k],mid=(r[0]+r[1])/2,d=Math.abs(mid-c[k]),n=x=>Math.max(1,Math.round(x)),up=dir<0,sor=st.base==='sorbete';
+if(k==='s')return sor?(up?`${V('Reemplazá','Reemplaza')} ${n(d*T/100)} g de agua por más ${nm('fruta').toLowerCase()} o azúcar.`:`${V('Sumá','Suma')} ${n(d*T/100)} g de agua a la mezcla.`):(up?`${V('Cambiá','Cambia')} ${n(d*T/100/.85)} g de leche por leche en polvo descremada.`:`${V('Cambiá','Cambia')} ${n(d*T/100/.85)} g de leche en polvo por leche.`);
+if(k==='pac')return up?`${V('Cambiá','Cambia')} ${n(d/.75)} g de azúcar por dextrosa: es más anticongelante.`:`${V('Cambiá','Cambia')} ${n(d/.75)} g de dextrosa por azúcar.`;
+if(k==='f')return sor?`Un sorbete no lleva grasa: ${V('sacá','saca')} lácteos y yema.`:(up?`${V('Cambiá','Cambia')} ${n(d*T/100/.314)} g de leche por ${nm('nata').toLowerCase()}.`:`${V('Cambiá','Cambia')} ${n(d*T/100/.314)} g de ${nm('nata').toLowerCase()} por leche.`);
+if(k==='m')return sor?`Un sorbete no lleva lácteos: ${V('sacá','saca')} leche en polvo.`:(up?`${V('Cambiá','Cambia')} ${n(d*T/100/.873)} g de leche por leche en polvo.`:`${V('Cambiá','Cambia')} ${n(d*T/100/.873)} g de leche en polvo por leche.`);
+return up?`${V('Cambiá','Cambia')} ${n(d/.36)} g de dextrosa por azúcar. Ojo: también baja el PAC, ${V('revisalo','revísalo')}.`:`${V('Cambiá','Cambia')} ${n(d/.36)} g de azúcar por dextrosa. Ojo: sube el PAC, ${V('revisalo','revísalo')}.`}
+function render(){
+$('pais').innerHTML=Object.entries(PAISES).map(([k,p])=>`<option value="${k}"${k===st.pais?' selected':''}>${p.n}</option>`).join('');
+$('base').value=st.base;$('q').value=st.q;$('u').value=st.u;const cv=$('cb').value;$('cb').innerHTML=OPT();if(cv)$('cb').value=cv;if(!$('cf').value)fill();
+$('add').innerHTML=OPT(null,ADDC);chips();
+$('rows').innerHTML=st.rec.map(([k,g,l,m],i)=>`<div class="row" style="--cc:${CCOL[catOf(k)]}"><select data-k="${i}" aria-label="Ingrediente">${OPT(k)}</select><input type="number" min="0" inputmode="decimal" value="${g}" data-g="${i}" aria-label="Gramos"><label class="lk"><input type="checkbox" data-l="${i}"${l?' checked':''} aria-label="Fijar cantidad">🔒</label><button data-d="${i}" aria-label="Quitar ingrediente">✕</button><div class="mn">Aporta por 100 g: grasa ${ING[k].f} · SLNG ${ING[k].m} · sólidos ${ING[k].s} · PAC ${ING[k].pac} · POD ${ING[k].pod}${ING[k].d?`<br>Dosis habitual: <b>${ING[k].d[0]}–${ING[k].d[1]} g/kg</b> (≈ ${Math.round(ING[k].d[0]*TG()/1000)}–${Math.round(ING[k].d[1]*TG()/1000)} g en tu mezcla)`:''}${ING[k].fl?(catOf(k)==='E'?'<br>Dosis fija: se mantiene como la cargues.':`<br>Mínimo: <input type="number" min="0" inputmode="decimal" data-m="${i}" value="${m||''}" placeholder="0" aria-label="Mínimo en gramos"> g en la receta balanceada`):''}</div></div>`).join('');
+buildCost();renderSaved();renderRB();renderPresets();renderRangos();out();sv()}
+function out(){renderSug();syncSl();syncCost();if(st.machines&&st.machines.length)maqYield();const {T,c}=calc();$('tot').textContent=T+' g';
+if(!T){$('coach').innerHTML='<b>Empecemos.</b> Agregá tus ingredientes y te voy diciendo cómo va la mezcla.';$('mets').innerHTML='';return}
+const rg=curR();let bad=[],html='';
+ORDER.forEach(k=>{const r=rg[k],w=r[1]-r[0]||1,v=c[k];let s='ok',dir=0;if(v<r[0]){dir=-1;s=r[0]-v>w*.15?'bad':'warn'}else if(v>r[1]){dir=1;s=v-r[1]>w*.15?'bad':'warn'}
+const lo=Math.max(0,r[0]-w*1.2),hi=r[1]+w*1.2,pc=x=>Math.min(100,Math.max(0,(x-lo)/(hi-lo)*100));
+if(dir)bad.push(k);
+const i=INFO[k],dec=k==='pac'||k==='pod'?Math.round(v):v.toFixed(1);
+const M2=st.level==='maestro';
+html+=`<div class="m ${s}"><div class="mh"><strong>${i.t}</strong><span class="val">${dec}${i.u}</span></div><div class="g"><div class="z" style="left:${pc(r[0])}%;width:${pc(r[1])-pc(r[0])}%"></div><div class="pin" style="left:${pc(v)}%"></div></div><div class="mh"><span class="rng">Ideal: ${r[0]} a ${r[1]}${i.u}</span><span class="st">${dir?dir<0?'Bajo':'Alto':'En rango'}</span></div>${dir?(M2?`<div class="mv">${move(k,dir,c,T)}</div>`:`<p class="why"><b>Qué pasa:</b> ${dir<0?i.lo:i.hi}</p><div class="mv"><b>Qué mover:</b> ${move(k,dir,c,T)}</div>`):''}${M2?'':`<details><summary>¿Qué es esto?</summary>${i.what}</details>`}</div>`});
+const fl=st.rec.map(x=>ING[x[0]]).find(i=>i.tip),ok=!bad.length,over=st.rec.filter(x=>ING[x[0]].d&&(+x[1]||0)>ING[x[0]].d[1]*T/1000).map(x=>nm(x[0])),M=st.level==='maestro';
+$('mo').setAttribute('d',ok?'M25 49q7 6 14 0':'M25 52q7-5 14 0');
+$('coach').innerHTML=(ok?(M?`<b>Balanceada.</b> Lista para pasteurizar.`:`<b>¡Mezcla pareja!</b> Todo está en rango. ${V('Podés','Puedes')} pasteurizar y mantecar con confianza.`)
+:(M?`<b>Fuera de rango:</b> ${bad.map(k=>INFO[k].t).join(', ')}. ${V('Arrancá','Arranca')} por ${INFO[bad[0]].t.toLowerCase()}.`
+:`<b>${bad.length===1?'Un solo ajuste.':'Vamos de a uno.'}</b> ${V('Empezá','Empieza')} por ${INFO[bad[0]].t.toLowerCase()}. Cada cambio mueve otros números, pero se recalculan solos: ${V('mirá','mira')} cómo queda el resto.`))
++(fl&&!M?`<br><br><b>${fl.tl||'Sobre el sabor'}:</b> ${fl.tip}`:'')+(over.length?`<br><br><b>Ojo:</b> te pasaste del máximo habitual de ${over.join(' y ')}.`:'');
+$('mets').innerHTML=html}
+$('pais').onchange=e=>{st.pais=e.target.value;render()};
+$('base').onchange=e=>{st.base=e.target.value;const d=RB.find(r=>r.b===st.base);if(d)st.rec=d.i.map(x=>[x[0],x[1],0,0]);render()};
+$('addb').onclick=()=>{st.rec.push([$('add').value,0]);render()};
+$('rows').addEventListener('input',e=>{if(e.target.dataset.g!==undefined){st.rec[+e.target.dataset.g][1]=e.target.value;out();sv()}});
+$('rows').addEventListener('change',e=>{if(e.target.dataset.k!==undefined){st.rec[+e.target.dataset.k][0]=e.target.value;render()}});
+$('rows').addEventListener('click',e=>{const d=e.target.dataset.d;if(d!==undefined){st.rec.splice(+d,1);render()}});
+const CAP={yema:.16,dulce:.2,nata:.45,polvo:.12,dex:.12,sac:.25,fruta:.8,choc:.18,chocl:.2,cacao:.06,pist:.15};
+const SH={s:'Sólidos',pac:'PAC',f:'Grasa',m:'SLNG',pod:'POD'};
+const HINT={s:['polvo'],pac:['dex','sac'],f:['nata','yema'],m:['polvo'],pod:['sac','dex']};
+let SOL=null;
+function solve(){
+const Tg=st.u==='L'?st.q*1070:st.q*1000,r=curR(),fx={f:0,m:0,s:0,pac:0,pod:0},out=[],free=[],ks=[...new Set(st.rec.map(x=>x[0]))];let fg=0;
+if(!(Tg>0)||!ks.length)return null;
+ks.forEach(k=>{const lk=catOf(k)==='E'||st.rec.some(x=>x[0]===k&&x[2]);if(!lk){free.push(k);return}
+const g=k==='neutro'?Tg*.005:catOf(k)==='E'?st.rec.filter(x=>x[0]===k).reduce((a,x)=>a+(+x[1]||0),0)*Tg/(st.rec.reduce((a,x)=>a+(+x[1]||0),0)||Tg):st.rec.filter(x=>x[0]===k&&x[2]).reduce((a,x)=>a+(+x[1]||0),0),i=ING[k];
+out.push([k,Math.round(g),1]);fg+=Math.round(g);fx.f+=g*i.f/Tg;fx.m+=g*i.m/Tg;fx.s+=g*i.s/Tg;fx.pac+=g*i.pac*10/Tg;fx.pod+=g*i.pod*10/Tg});
+if(!free.length)return null;
+const rows=ORDER.map(k=>{const w=Math.max(1,r[k][1]-r[k][0]),m=k==='pac'||k==='pod'?10:1;return{c:free.map(f=>ING[f][k]*m/Tg/w),t:((r[k][0]+r[k][1])/2-fx[k])/w}});
+rows.push({c:free.map(()=>300/Tg),t:(Tg-fg)*300/Tg});
+const lb=free.map(f=>st.rec.filter(x=>x[0]===f).reduce((a,x)=>a+(+x[3]||0),0)),x=free.map((f,j)=>Math.max(lb[j],(Tg-fg)/free.length)),e=rows.map(o=>o.t-o.c.reduce((a,c,j)=>a+c*x[j],0));
+for(let it=0;it<4000;it++)free.forEach((f,j)=>{let nu=0,de=0;rows.forEach((o,q)=>{nu+=o.c[j]*(e[q]+o.c[j]*x[j]);de+=o.c[j]**2});const v=Math.max(lb[j],Math.min((ING[f].d?ING[f].d[1]/1000:(ING[f].cap||CAP[f]||.3))*Tg,Math.max(0,nu/(de||1))));rows.forEach((o,q)=>e[q]-=o.c[j]*(v-x[j]));x[j]=v});
+const g=x.map(Math.round),d=Tg-fg-g.reduce((a,b)=>a+b,0);g[g.indexOf(Math.max(...g))]+=Math.round(d);
+free.forEach((f,j)=>out.push([f,g[j],0]));
+out.sort((a,b)=>ks.indexOf(a[0])-ks.indexOf(b[0]));
+return{T:Math.round(Tg),list:out}}
+function renderSug(){const s=solve();SOL=s;const el=$('sug');
+if(!s){el.innerHTML='<p>Agregá ingredientes y elegí la cantidad final: te armo la receta exacta.</p>';return}
+const {c}=calc(s.list.map(x=>[x[0],x[1]])),r=curR(),have=st.rec.map(x=>x[0]);
+const bad=ORDER.filter(k=>{const w=Math.max(1,r[k][1]-r[k][0])*.03;return c[k]<r[k][0]-w||c[k]>r[k][1]+w});
+const lines=s.list.map(([k,g,l])=>{const mine=Math.round(st.rec.filter(x=>x[0]===k).reduce((a,x)=>a+(+x[1]||0),0)),d=g-mine;return `<div class="mh"><span>${nm(k)}${l?' 🔒':''}</span><span><b>${g} g</b> <span class="rng">${d?(d>0?'+':'')+d+' vs tu mezcla':'igual a tu mezcla'}</span></span></div>`}).join('');
+const chips=ORDER.map(k=>`<span class="chip ${bad.includes(k)?'bad':'ok'}">${SH[k]} ${Math.round(c[k]*(k==='pac'||k==='pod'?1:10))/(k==='pac'||k==='pod'?1:10)}</span>`).join('');
+let msg=`<b>Todo en rango.</b> Con estos ingredientes se logra el equilibrio completo.`;
+if(bad.length){const sg=[...new Set(bad.flatMap(k=>HINT[k]))].filter(k=>!have.includes(k)).map(nm);msg=`<b>Este es el mejor ajuste posible</b> con lo que elegiste, pero ${bad.map(k=>SH[k]).join(' y ')} queda${bad.length>1?'n':''} fuera de rango.${st.rec.some(x=>+x[3]>0)?' Tus mínimos de sabor pueden estar limitando: '+V('probá','prueba')+' bajarlos.':''}${sg.length&&st.base==='crema'?` ${V('Probá','Prueba')} sumar: ${sg.join(' o ')}.`:''}`}
+el.innerHTML=`<p style="margin:0 0 6px">Para <b>${s.T} g</b> de mezcla${st.u==='L'?` (${st.q} L ≈ 1,07 kg por litro)`:''}:</p>${lines}<div>${chips}</div><p class="why">${msg}</p><button class="p" id="use">Usar esta receta en mi mezcla</button><details><summary>¿Por qué se desbalancea al tocar un número?</summary>Cada ingrediente mueve varios valores a la vez: la leche en polvo sube sólidos y SLNG, y la dextrosa sube el PAC y baja el dulzor. Este cálculo resuelve todos juntos. ${V('Usá','Usa')} el candado para fijar lo que no querés que cambie.</details>`}
+$('sug').addEventListener('click',e=>{if(e.target.id==='use'&&SOL){st.rec=SOL.list.map(x=>[x[0],x[1],x[2]]);render()}});
+$('rows').addEventListener('change',e=>{const l=e.target.dataset.l;if(l!==undefined){st.rec[+l][2]=e.target.checked?1:0;out();sv()}});
+$('rows').addEventListener('input',e=>{const m=e.target.dataset.m;if(m!==undefined){st.rec[+m][3]=+e.target.value||0;out();sv()}});
+$('q').oninput=e=>{st.q=+e.target.value||0;out();sv()};
+$('u').onchange=e=>{st.u=e.target.value;out();sv()};
+function fill(){const i=ING[$('cb').value];if(!i)return;const ct=catOf($('cb').value);if(ct!=='U')$('cc').value=ct;$('cf').value=i.f;$('cm').value=i.m;$('cs').value=i.s;$('cp').value=i.pac;$('cd').value=i.pod;$('cl').value=i.d?i.d[0]:'';$('ch').value=i.d?i.d[1]:''}
+$('cb').onchange=fill;
+$('csv').onclick=()=>{const n=$('cn').value.replace(/[<>&"]/g,'').trim();if(!n){$('cmsg').textContent='Escribí un nombre para tu ingrediente.';return}
+const N=x=>+$(x).value||0,id='u_'+n.toLowerCase().replace(/[^a-z0-9]+/g,'_'),mx=N('ch'),o={name:n,f:N('cf'),m:N('cm'),s:N('cs'),pac:N('cp'),pod:N('cd')};
+if(mx>0){o.fl=1;o.d=[N('cl'),mx];o.tip='Es un ingrediente propio: uso los valores que cargaste.'}
+o.cat=$('cc').value;o.ver=verOk(o)?1:0;st.custom[id]=o;ING[id]=o;BASE[id]=n+(o.ver?' ✓':'');CAT[id]=o.cat;if(!st.rec.some(x=>x[0]===id))st.rec.push([id,0]);$('cmsg').textContent='Guardado y agregado a tu mezcla con 0 g: poné los gramos arriba.';render()};
+let SCAN=null;
+const verOk=o=>SCAN&&['f','m','s','pac','pod'].every(k=>Math.abs(o[k]-SCAN[k])<.05);
+const DOSEC={C:[40,120],N:[40,100],D:[50,150],F:[150,400],O:[5,40]};
+function applyScan(r){const p=r.per100||{},v=k=>p[k]==null?null:+p[k]||0,n=k=>v(k)||0,fat=n('fat'),car=n('carbs'),sug=n('sugars'),pro=n('protein'),fib=n('fiber'),ing=String(r.ingredients||'');
+const so=Math.min(100,Math.round((fat+car+pro+fib+1.5)*10)/10),dairy=/leche|lact|milk|suero|whey|nata|crema|cream|manteca|butter/i.test(ing);
+const m=dairy?Math.round(Math.min(Math.max(0,so-fat-sug),pro/.36)*10)/10:0,lac=Math.min(sug,m*.55),pac=Math.round(sug*10)/10,pod=Math.round((sug-lac+lac*.16)*10)/10;
+SCAN={f:fat,m,s:so,pac,pod};
+const ct=/cacao|cocoa|chocolat/i.test(ing)?'C':/pistach|avellan|almendr|nuez|man[ií]\b|hazelnut|almond|peanut/i.test(ing)?'N':/dulce de leche|caramel|mermelada|jam/i.test(ing+(r.name||''))?'D':$('cc').value,d=DOSEC[ct]||[0,0];
+$('cn').value=String(r.name||'').replace(/[<>&"]/g,'');$('cf').value=fat;$('cm').value=m;$('cs').value=so;$('cp').value=pac;$('cd').value=pod;$('cc').value=ct;$('cl').value=d[0]||'';$('ch').value=d[1]||'';
+const w=[];if(r.basis!=='100g')w.push('No pude confirmar que la tabla sea por 100 g: revisá los valores.');if(fat+car+pro>102)w.push('Los valores suman más de 100 g: puede haber un error de lectura.');if(sug>car+.5)w.push('Los azúcares superan a los hidratos: revisá la foto.');if(['fat','carbs','sugars','protein'].some(k=>v(k)===null))w.push('Hay datos que no se leyeron: completalos a mano.');
+$('mmsg').textContent=`Leído (por 100 g): grasa ${fat}, hidratos ${car}, azúcares ${sug}, proteínas ${pro}.\nEstimado: sólidos ${so}, SLNG ${m}, PAC ${pac}, POD ${pod}.\n`+(w.length?w.join('\n')+'\n':'')+'Revisá y tocá "Guardar ingrediente": si no cambiás los números queda marcado con ✓ (verificado con etiqueta).'}
+$('mgo').onclick=()=>{const N=x=>$(x).value===''?null:+$(x).value;applyScan({name:$('cn').value,per100:{fat:N('mf'),carbs:N('mc'),sugars:N('ms'),protein:N('mp'),fiber:0},ingredients:$('mi').value,basis:'100g'})};
+
+$('cc').innerHTML=Object.entries(CATN).filter(([c])=>c!=='U').map(([c,t])=>`<option value="${c}">${t}</option>`).join('');
+
+`leche;61;3.2;4.8;44
+nata;340;2.2;3.4;32
+polvo;362;36;52;530
+sac;400;0;100;0
+dex;368;0;92;0
+yema;322;16;3.6;48
+neutro;8;0;95;100
+fruta;32;0.7;7.7;1
+dulce;315;5.5;56;65
+choc;598;7.8;34;6
+chocl;535;7.7;59;79
+cacao;228;19.6;58;21
+pist;598;18;20;5
+agua;0;0;0;0
+c811;551;5.4;50;24
+chocb;580;5.9;59;90
+banana;89;1.1;23;1
+mani;588;22;20;5
+avell;628;13;17;3
+lsemi;46;3.3;4.9;44
+ldes;34;3.4;5;44
+n18;188;2.8;4;38
+lpe;496;26.3;38.4;371
+lcond;321;7.9;54.4;127
+levap;134;6.8;10;106
+yog;61;3.5;4.7;46
+qcrema;342;6.2;4.1;321
+masc;429;3.5;4;46
+ricota;174;11.3;3;84
+manteca;717;0.9;0.1;11
+suero;353;12.9;74.5;850
+lcoco;187;1.8;2.8;15
+fruc;400;0;100;0
+jglu;316;0;80;30
+maltod;384;0;96;70
+inv;308;0;77;0
+miel;304;0.3;82.4;4
+agave;310;0;76;4
+arce;260;0;67;12
+mor;380;0;98;30
+sorb;260;0;100;0
+erit;20;0;100;0
+hue;143;13;1.1;142
+clara;52;11;0.7;166
+c823;545;6.4;51;110
+cw2;580;6;58;95
+c7030;598;6.5;35;10
+pcac;550;12;30;20
+mcac;884;0;0;0
+dser;320;6.5;55;75
+nut;539;6.3;58;41
+carm;345;1.5;70;150
+merm;263;0.4;65;15
+alm;608;19;20;5
+nuez;654;14;14;2
+tahini;595;17;21;18
+coco;660;7;24;20
+fram;52;1.2;12;1
+ara;57;0.7;14;1
+mango;60;0.8;15;1
+mara;97;2.2;23;28
+lim;29;0.4;9.3;2
+nar;45;0.7;10.4;1
+pina;50;0.5;13;1
+dur;39;0.9;9.5;0
+manz;52;0.3;14;1
+pera;57;0.4;15;1
+uva;69;0.7;18;2
+kiwi;61;1.1;15;3
+sand;30;0.6;8;1
+mel;34;0.8;8;16
+cer;63;1.1;16;0
+higo;74;0.8;19;1
+aguac;160;2;9;7
+cafe;209;12;43;12
+matcha;312;30;39;8
+alc;231;0;0;0
+aceite;884;0;0;0
+bufala;97;4.5;5.2;52
+cabra;69;3.6;4.4;50
+oveja;108;5.4;5.1;44
+lsl;61;3.2;4.8;44
+ygr;133;9;3.6;36
+avena;47;1;6.7;40
+soja;33;3;0.5;40
+almm;15;0.5;0.3;35
+arroz;47;0.3;9.2;40
+cocol;19;0.2;1;15
+lact;380;0;100;0
+trehal;368;0;92;0
+xili;240;0;100;0
+maltit;210;0;100;0
+lbg;8;0;84;0
+guar;8;5;85;0
+carra;8;0;88;30
+xan;8;0;90;0
+cmc;0;0;92;7000
+pect;8;0;90;0
+alg;0;0;90;9000
+agar;8;3;80;30
+tara;8;0;84;0
+arab;8;2;88;0
+gel;335;85;0;50
+mcc;0;0;95;0
+inul;150;0;90;0
+almod;381;0.3;88;9
+mdg;855;0;0;0
+lec;700;0;0;2
+pol80;0;0;0;0
+neutrof;8;0;90;50
+cacao22;288;20;42;15
+nibs;592;14;34;5
+galleta;480;6;65;400
+pral;580;8;55;10
+marz;480;8;58;30
+cajua;553;18;30;12
+macad;718;8;14;5
+mora;43;1.4;10;1
+ciru;46;0.7;11;0
+pomelo;42;0.5;10;1
+mand;53;0.8;13;2
+gran;83;1.7;19;3
+lichi;66;0.8;17;1
+guay;68;2.6;14;2
+papa;43;0.5;11;8
+dat;282;2.5;75;2
+pasa;299;3.1;79;11
+dam;48;1.4;11;1
+lima;25;0.4;8.4;2
+tam;239;2.8;63;28
+espr;2;0.1;0;2
+vino;135;0.3;8;9
+lcrem;327;1.5;25;45
+amar;230;0;28;5
+vain;240;0.3;45;10
+can;247;4;81;10
+sanig;318;7;57;140
+sembrar;315;7;56;140
+baltar;323;6.9;63;124
+chirimoya;85;1.7;20;5
+caqui;70;0.6;18.6;1
+nisp;47;0.4;13;1
+lucuma;99;1.5;25;4
+uchuva;53;1.9;16;3
+feijoa;55;1;13;3
+lulo;25;1;7;1
+guanabana;66;1;17;14
+pitahaya;60;1.2;13;1
+tuna;41;0.7;14;1
+chia;486;16.5;42;5
+aqua;20;0.8;4;200
+tofuse;55;5;2;7
+algarr;222;4.6;80;35`.trim().split('\n').forEach(l=>{const [id,kc,pr,cb,so]=l.split(';');Object.assign(ING[id],{kcal:+kc,pro:+pr,carb:+cb,sod:+so})});
+const SATFR={L:.63,V:.15,C:.6,N:.12,F:.05,D:.55,H:.35,K:.2,Q:.15,P:.1,E:0,O:.3,U:.3};
+const ALLERG={leche:['milk'],nata:['milk'],polvo:['milk'],lpe:['milk'],lcond:['milk'],levap:['milk'],yog:['milk'],qcrema:['milk'],masc:['milk'],ricota:['milk'],manteca:['milk'],suero:['milk'],lsemi:['milk'],ldes:['milk'],n18:['milk'],bufala:['milk'],cabra:['milk'],oveja:['milk'],lsl:['milk'],ygr:['milk'],dulce:['milk'],dser:['milk'],chocl:['milk'],c823:['milk'],chocb:['milk'],cw2:['milk'],nut:['milk'],galleta:['gluten','milk'],hue:['egg'],yema:['egg'],clara:['egg'],pral:['egg','nuts'],alm:['nuts'],nuez:['nuts'],avell:['nuts'],pist:['nuts'],cajua:['nuts'],macad:['nuts'],marz:['nuts'],mani:['peanut'],tahini:['sesame'],soja:['soy'],lec:['soy'],avena:['gluten']};
+const ALLN={milk:'Leche',egg:'Huevo',nuts:'Frutos de cáscara',peanut:'Cacahuete',sesame:'Sésamo',soy:'Soja',gluten:'Gluten (avena/galleta: verificar certificación sin gluten del proveedor)'};
+function nutriTotals(){const T=st.rec.reduce((a,x)=>a+(+x[1]||0),0);if(!T)return null;const n={kcal:0,pro:0,carb:0,fat:0,sat:0,sod:0},al=new Set();
+st.rec.forEach(([k,g])=>{g=+g||0;if(!g)return;const i=ING[k];n.kcal+=g*(i.kcal||0)/100;n.pro+=g*(i.pro||0)/100;n.carb+=g*(i.carb||0)/100;n.fat+=g*(i.f||0)/100;n.sat+=g*(i.f||0)*(SATFR[catOf(k)]??.3)/100;n.sod+=g*(i.sod||0)/100;(ALLERG[k]||[]).forEach(x=>al.add(x))});
+const per=x=>Math.round((x/T*100)*10)/10;
+return{T,p100:{kcal:Math.round(n.kcal/T*100),pro:per(n.pro),carb:per(n.carb),fat:per(n.fat),sat:per(n.sat),sod:Math.round(n.sod/T*100)},al:[...al].map(x=>ALLN[x])}}
+function labelCheck(nt){if(!nt)return'';const p=nt.p100,kc=p.kcal||1,sugE=p.carb*4/kc*100,satE=p.sat*9/kc*100,fatE=p.fat*9/kc*100,sodK=p.sod/kc,L=[];
+if(st.pais==='MX'){if(p.kcal>=275)L.push('Exceso de calorías (≥275 kcal/100g)');if(satE>=10)L.push('Exceso de grasas saturadas (>10% de la energía)');if(p.sod>=350)L.push('Exceso de sodio (≥350 mg/100g)')}
+if(st.pais==='CL'){if(p.carb>=10)L.push('Alto en azúcares (≥10 g/100g)');if(p.sat>=4)L.push('Alto en grasas saturadas (≥4 g/100g)');if(p.sod>=400)L.push('Alto en sodio (≥400 mg/100g)');L.push('Nota: si vendés a granel, por porción y preparado a pedido del cliente, Chile exime del sello frontal.')}
+if(st.pais==='AR'){if(sugE>=10)L.push(`Exceso en azúcares (≥10% de la energía; tu mezcla: ${sugE.toFixed(0)}%)`);if(fatE>=30)L.push(`Exceso en grasas totales (≥30% de la energía; tu mezcla: ${fatE.toFixed(0)}%)`);if(satE>=10)L.push(`Exceso en grasas saturadas (≥10% de la energía; tu mezcla: ${satE.toFixed(0)}%)`);if(sodK>=1)L.push(`Exceso en sodio (≥1 mg de sodio por kcal; tu mezcla: ${sodK.toFixed(2)})`);L.push('El límite de calorías queda a definición de la autoridad de aplicación (perfil OPS): no hay un número fijo para chequear.')}
+if(st.pais==='UY'){if(p.carb>13)L.push('Exceso de azúcares (>13 g/100g)');if(p.fat>13)L.push('Exceso de grasas totales (>13 g/100g)');if(p.sat>6)L.push('Exceso de grasas saturadas (>6 g/100g)');L.push('Uruguay no tiene sello de calorías.')}
+if(st.pais==='PE'){if(p.carb>22.5)L.push('Alto en azúcar (>22.5 g/100g)');if(p.sat>6)L.push('Alto en grasas saturadas (>6 g/100g)');if(p.sod>800)L.push('Alto en sodio (>800 mg/100g)');L.push('Perú no tiene sello de calorías (solo tabla nutricional).')}
+if(st.pais==='CO'){if(sugE>=10)L.push(`Exceso en azúcares (≥10% de la energía; tu mezcla: ${sugE.toFixed(0)}%)`);if(satE>=10)L.push(`Exceso en grasas saturadas (≥10% de la energía; tu mezcla: ${satE.toFixed(0)}%)`);if(p.kcal>275)L.push('Exceso en calorías (>275 kcal/100g, sujeto a fases)');if(p.sod>=300||sodK>=1)L.push('Exceso en sodio (≥300 mg/100g o ≥1 mg/kcal)')}
+if(st.pais==='EC'){const sem=(v,b1,b2)=>v<=b1?'verde':v<=b2?'amarillo':'rojo';L.push(`Semáforo grasas totales: ${sem(p.fat,3,20)} (${p.fat.toFixed(1)} g/100g)`,`Semáforo azúcares: ${sem(p.carb,5,15)} (${p.carb.toFixed(1)} g/100g)`,`Semáforo sodio: ${sem(p.sod,120,600)} (${Math.round(p.sod)} mg/100g)`)}
+if(st.pais==='BO'){L.push('Bolivia usa un semáforo (Ley 775) para azúcar, grasas saturadas y sodio, pero los cortes exactos del semáforo no están claros en mis fuentes — sí hay umbrales para declarar "bajo en" por porción, que no aplican a un sello obligatorio.')}
+if(st.pais==='PY'){if(sugE>=10)L.push(`Referencia OPS — azúcares (≥10% de la energía; tu mezcla: ${sugE.toFixed(0)}%)`);if(satE>=10)L.push(`Referencia OPS — grasas saturadas (≥10% de la energía; tu mezcla: ${satE.toFixed(0)}%)`);L.push('Paraguay (Ley 7092/2023) todavía tiene los números oficiales en proceso de armonización con el Mercosur — esto usa el perfil de nutrientes de la OPS como referencia, no el valor legal final.')}
+if(st.pais==='US'){L.push('EE.UU. no usa octógonos: usa el panel "Nutrition Facts" (FDA), obligatorio en productos envasados. Los 9 alérgenos de declaración obligatoria son leche, huevo, pescado, crustáceos, frutos de cáscara, cacahuete, trigo, soja y sésamo (desde 2023, FASTER Act).')}
+return L}
+
+
+st.stock=st.stock||{};
+const SUF={g:1,kg:1000,ml:1,L:1000};
+function renderStock(){
+$('sadd').innerHTML=OPT();
+const ids=Object.keys(st.stock).sort((a,b)=>{const A=st.stock[a],B=st.stock[b],lA=A.min&&A.qty<A.min,lB=B.min&&B.qty<B.min;return(lB-lA)||nm(a).localeCompare(nm(b))});
+$('stocklist').innerHTML=ids.length?ids.map(k=>{const e=st.stock[k],low=e.min&&e.qty<e.min,q=e.qty>=1000?(e.qty/1000).toFixed(2)+(e.u==='vol'?' L':' kg'):Math.round(e.qty)+(e.u==='vol'?' ml':' g'),pr=st.price[k]?` · ${st.price[k]} ${cu()}/${e.u==='vol'?'L':'kg'}`:'';
+return`<div class="m ${low?'bad':'ok'}"><div class="mh"><strong>${nm(k)}</strong><span class="val">${q}</span></div><p class="rng" style="margin:4px 0 0">${e.min?`Aviso si baja de ${e.min>=1000?(e.min/1000)+(e.u==='vol'?' L':' kg'):e.min+(e.u==='vol'?' ml':' g')}${low?' — <b>¡comprar!</b>':''}`:''}${pr}</p><button data-sx="${k}" style="margin-top:8px">Quitar del stock</button></div>`}).join(''):'<p class="rng">Todavía no cargaste stock.</p>'}
+$('sadd').onchange=()=>{const e=st.stock[$('sadd').value];$('sq').value=e?(e.qty):'';$('su').value=e&&e.u==='vol'?'ml':'g';$('sm').value=e&&e.min?e.min:'';$('sp').value=st.price[$('sadd').value]||''};
+$('ssv').onclick=()=>{const k=$('sadd').value,u=$('su').value,vol=u==='ml'||u==='L',f=SUF[u],q=(+$('sq').value||0)*f,m=(+$('sm').value||0)*f;
+if(!q&&!m){delete st.stock[k]}else{st.stock[k]={qty:q,min:m||0,u:vol?'vol':'mass'}}
+if($('sp').value)st.price[k]=+$('sp').value||0;
+sv();renderStock();buildCost();syncCost()};
+$('stocklist').addEventListener('click',e=>{const k=e.target.dataset.sx;if(k){delete st.stock[k];sv();renderStock()}});
+const _sd=()=>{const ks=[...new Set(st.rec.map(x=>x[0]))].map(k=>[k,st.rec.filter(x=>x[0]===k).reduce((a,x)=>a+(+x[1]||0),0)]).filter(x=>x[1]>0);
+if(!ks.length){$('smsg').textContent='Cargá una receta con gramos primero.';return}
+let faltan=[];ks.forEach(([k,g])=>{if(!st.stock[k]){faltan.push(nm(k)+' (sin stock registrado)')}else{st.stock[k].qty-=g;if(st.stock[k].qty<0)faltan.push(nm(k)+' (quedó negativo, revisá)')}});
+sv();renderStock();$('smsg').textContent=faltan.length?'Descontado. Atención: '+faltan.join(', '):'Descontado de tu stock.'};
+
+
+
+st.machines=st.machines||[];st.activeM=st.activeM===undefined?-1:st.activeM;st.potSize=st.potSize||1000;
+const MPRE={Carpigiani:[30,50,-12,-8],Cattabriga:[30,45,-11,-7],Telme:[25,45,-11,-7],Bravo:[25,45,-11,-7],'Continua/industrial':[80,110,-6,-4],Otra:[20,40,-11,-7]};
+function renderMaq(){$('mpote').value=st.potSize;
+$('mmarca').innerHTML=Object.keys(MPRE).map(k=>`<option value="${k}">${k}</option>`).join('');
+$('maqlist').innerHTML=st.machines.length?st.machines.map((m,i)=>`<div class="m ${st.activeM===i?'ok':''}"><div class="mh"><strong>${m.nom||m.marca}</strong>${st.activeM===i?'<span class="chip ok">En uso</span>':''}</div><p class="rng" style="margin:4px 0">${m.marca} · overrun ${m.ovmin}–${m.ovmax}% · salida ${m.tmin} a ${m.tmax} °C${m.cap?` · ${m.cap} L/lote`:''}</p><div class="bar"><button data-mu="${i}">${st.activeM===i?'Dejar de usar':'Usar esta'}</button><button data-mx="${i}">Borrar</button></div></div>`).join(''):'<p class="rng">Todavía no cargaste ninguna máquina.</p>';
+maqYield()}
+$('mmarca').onchange=()=>{const d=MPRE[$('mmarca').value];$('movmin').value=d[0];$('movmax').value=d[1];$('mtmin').value=d[2];$('mtmax').value=d[3]};
+$('msv').onclick=()=>{st.machines.push({nom:$('mnom').value.replace(/[<>&"]/g,''),marca:$('mmarca').value,ovmin:+$('movmin').value||0,ovmax:+$('movmax').value||0,tmin:+$('mtmin').value||0,tmax:+$('mtmax').value||0,cap:+$('mcap').value||0});if(st.activeM<0)st.activeM=st.machines.length-1;$('mnom').value='';sv();renderMaq()};
+$('maqlist').addEventListener('click',e=>{const u=e.target.dataset.mu,x=e.target.dataset.mx;if(u!==undefined){st.activeM=st.activeM===+u?-1:+u;sv();renderMaq()}else if(x!==undefined){st.machines.splice(+x,1);if(st.activeM===+x)st.activeM=-1;else if(st.activeM>+x)st.activeM--;sv();renderMaq()}});
+function maqYield(){const m=st.machines[st.activeM],T=st.rec.reduce((a,x)=>a+(+x[1]||0),0);
+if(!m){$('maqyield').innerHTML='<p class="rng">Marcá una máquina como "en uso" para ver cuánto helado terminado vas a sacar de tu receta actual.</p>';return}
+if(!T){$('maqyield').innerHTML='<p class="rng">Cargá una receta en la pestaña "Hacé tu receta" para ver el rendimiento.</p>';return}
+const Lm=T/1070,lo=(Lm*(1+m.ovmin/100)).toFixed(2),hi=(Lm*(1+m.ovmax/100)).toFixed(2);
+$('maqyield').innerHTML=`<div class="mh"><span>Con ${m.nom||m.marca}, esta mezcla (${Math.round(T)} g) rinde</span><b class="val">${lo}–${hi} L</b></div><p class="rng" style="margin:6px 0 0">Servite entre ${m.tmin} y ${m.tmax} °C de salida de máquina.${m.cap&&T/1000>m.cap?` Ojo: tu lote (${(T/1000).toFixed(1)} kg) supera la capacidad de esta máquina (${m.cap} L/lote) — dividilo en más de un lote.`:''}</p>`}
+
+
+st.lotes=st.lotes||[];
+
+st.lotCnt=st.lotCnt||{};st.cur=st.cur||null;$('fvd').value=st.vida||'';$('fvd').oninput=e=>{st.vida=e.target.value;sv()};
+const pad=n=>String(n).padStart(2,'0');
+function fmtD(ts){const d=new Date(ts);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()}
+function ensureLot(){if(st.cur)return st.cur;const d=new Date(),k=String(d.getFullYear()).slice(2)+pad(d.getMonth()+1)+pad(d.getDate());st.lotCnt[k]=(st.lotCnt[k]||0)+1;st.cur={code:'L'+k+'-'+pad(st.lotCnt[k]),t:Date.now()};sv();return st.cur}
+function labelHTML(){const nt=nutriTotals();if(!nt)return null;const cur=ensureLot(),days=+$('fvd').value||0,ve=days?cur.t+days*864e5:null,p=nt.p100,
+ks=[...new Set(st.rec.map(x=>x[0]))].map(k=>[k,st.rec.filter(x=>x[0]===k).reduce((a,x)=>a+(+x[1]||0),0)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]),
+n=($('rn').value||'Receta sin nombre').replace(/[<>&"]/g,'');
+return `<h2>${n}</h2><p><b>Lote:</b> ${cur.code}</p><p><b>Elaboración:</b> ${fmtD(cur.t)}</p><p><b>Vencimiento:</b> ${ve?fmtD(ve):'____/____/______'}</p><p><b>Ingredientes</b> (de mayor a menor cantidad): ${ks.map(([k])=>nm(k)).join(', ')}.</p><p><b>Contiene:</b> ${nt.al.length?nt.al.join(', '):'no se detectaron alérgenos de declaración obligatoria'}</p><p><b>Información nutricional aproximada por 100 g:</b> ${p.kcal} kcal · grasas ${p.fat} g (saturadas ${p.sat} g) · carbohidratos ${p.carb} g · proteínas ${p.pro} g · sodio ${p.sod} mg</p><p><b>Cantidad del lote (mezcla):</b> ${(nt.T/1000).toFixed(2)} kg</p><p>Conservar a -18 °C.</p><p style="font-size:11px">Rótulo de ayuda: verificalo con la normativa de tu país antes de usarlo.</p>`}
+const ETL={mad:'maduración',prod:'mantecado',cam:'cámara de frío'};
+function elapsed(ts){const m=Math.floor((Date.now()-ts)/60000),h=Math.floor(m/60);return h>0?`${h} h ${m%60} min`:`${m} min`}
+function madRange(base){return base==='sorbete'?[1,2]:[4,12]}
+function renderLotes(){
+const m=st.machines[st.activeM];
+const row=(l,btnTxt)=>`<div class="m"><div class="mh"><strong>${l.nombre}</strong>${l.code?`<span class="rng"> · ${l.code}</span>`:''}<span class="val">${(l.cant/1000).toFixed(2)} kg</span></div><p class="rng" style="margin:4px 0">En esta etapa hace ${elapsed(l.t)}${l.etapa==='mad'?` · objetivo ${madRange(l.base)[0]}–${madRange(l.base)[1]} h`:''}</p>${l.etapa==='prod'?`<label class="rng">Merma en esta etapa (g, opcional)<input type="number" min="0" data-merma="${l.id}" value="${l.merma||''}" style="width:100%"></label>`:''}<button data-adv="${l.id}">${btnTxt}</button> <button data-rm="${l.id}">Quitar</button></div>`;
+const mad=st.lotes.filter(l=>l.etapa==='mad'),prod=st.lotes.filter(l=>l.etapa==='prod'),cam=st.lotes.filter(l=>l.etapa==='cam');
+$('lmad').innerHTML=mad.length?mad.map(l=>row(l,'Pasar a mantecado')).join(''):'<p class="rng">No hay lotes madurando.</p>';
+$('lprod').innerHTML=prod.length?prod.map(l=>row(l,'Terminado → cámara de frío')).join(''):'<p class="rng">No hay lotes mantecando.</p>';
+if(!m)$('lprod').innerHTML+='<p class="rng">Marcá una máquina "en uso" en 🧊 Máquinas para contar litros y potes al pasar a cámara.</p>';
+$('lcam').innerHTML=cam.length?cam.map(l=>`<div class="m ok"><div class="mh"><strong>${l.nombre}</strong>${l.code?`<span class="rng"> · ${l.code}</span>`:''}<span class="val">${l.lit?l.lit.toFixed(2)+' L':(l.cant/1000).toFixed(2)+' kg'}</span></div><p class="rng" style="margin:4px 0">Terminado hace ${elapsed(l.t)}${l.venc?` · vence ${fmtD(l.venc)}`:''}${l.potes?` · ≈ ${l.potes} potes de ${st.potSize} ml`:''}${l.merma?` · merma registrada: ${l.merma} g`:''}</p><button data-rm="${l.id}">Sacar de cámara (vendido/consumido)</button></div>`).join(''):'<p class="rng">No hay producto terminado en cámara.</p>'}
+$('tt-prod').addEventListener('input',e=>{const k=e.target.dataset.merma;if(k===undefined)return;const l=st.lotes.find(x=>x.id===+k);l.merma=+e.target.value||0;sv()});
+$('tt-prod').addEventListener('click',e=>{const a=e.target.dataset.adv,r=e.target.dataset.rm;
+if(a){const l=st.lotes.find(x=>x.id===+a);
+if(l.etapa==='prod'){const m=st.machines[st.activeM],net=Math.max(0,l.cant-(l.merma||0));if(m){const Lm=net/1070;l.lit=Lm*(1+(m.ovmin+m.ovmax)/2/100);l.potes=Math.round(l.lit*1000/st.potSize)}}
+l.etapa=l.etapa==='mad'?'prod':'cam';l.t=Date.now();sv();renderLotes()}
+else if(r){st.lotes=st.lotes.filter(x=>x.id!==+r);sv();renderLotes()}});
+$('fprod').onclick=()=>{const T=st.rec.reduce((a,x)=>a+(+x[1]||0),0);if(!T){$('fms').textContent='Cargá una receta con gramos primero.';return}
+const cur=ensureLot(),days=+$('fvd').value||0;
+st.lotes.push({id:Date.now(),nombre:$('rn').value||'Receta sin nombre',base:st.base,cant:T,etapa:'mad',t:Date.now(),code:cur.code,elab:cur.t,venc:days?cur.t+days*864e5:null});st.cur=null;
+let msg='Lote '+cur.code+' enviado a producción: ya está madurando.';
+if(Object.keys(st.stock).length){_sd();msg+=' '+$('smsg').textContent}
+sv();$('pmsg').textContent=msg;showTT('prod')};
+
+const THN=['auto','light','dark'],THI={auto:'🌓',light:'☀️',dark:'🌙'};
+let TH='auto';try{TH=localStorage.getItem('pm_theme')||'auto'}catch(e){}
+function applyTh(){const r=document.documentElement;if(TH==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',TH);$('thm').textContent=THI[TH]||'🌓'}
+$('thm').onclick=()=>{TH=THN[(THN.indexOf(TH)+1)%3];try{localStorage.setItem('pm_theme',TH)}catch(e){}applyTh()};
+applyTh();
+let ADDC='';
+function chips(){$('chips').innerHTML=[['','Todas'],...Object.entries(CATN)].filter(([c])=>!c||Object.keys(ING).some(k=>catOf(k)===c)).map(([c,t])=>`<button class="chip2${ADDC===c?' on':''}" data-c="${c}" style="--cc:${c?CCOL[c]:'var(--ink)'}">${t}</button>`).join('')}
+$('chips').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;ADDC=b.dataset.c;chips();$('add').innerHTML=OPT(null,ADDC)});
+const TIP={crear:'Movés las barras o cargás gramos, como prefieras: yo te aviso si algo se sale de rango.',catalogo:'¿Tu producto no está en la lista? Escaneá la etiqueta o cargá los datos a mano.',mis:'Acá volvés a abrir cualquier receta que ya guardaste.',comunidad:'Usá una receta de la comunidad como punto de partida y ajustala a tu gusto.',prod:'Acá seguís cada lote: maduración, mantecado y cámara de frío, con el tiempo que lleva en cada etapa.',maq:'Cargá tu mantecadora una vez y listo: el maestro te dice cuántos litros de helado vas a sacar de cada lote.',stock:'Cargá lo que tenés en el obrador y descontá cada lote que produzcas: así sabés qué comprar antes de que falte.',inicio:'¿Primera vez? Elegí tu nivel y mirá los pasos antes de arrancar.',receta:'Movés las barras o cargás gramos, como prefieras: yo te aviso si algo se sale de rango.',ing:'¿Tu producto no está en la lista? Escaneá la etiqueta o cargá los datos a mano.',base:'Usá una receta base como punto de partida y ajustala a tu gusto.',costos:'Cargá el precio por kg de cada ingrediente para ver el costo real de tu mezcla.'};
+let fbOpen=false;
+function fabTip(t){$('fb').textContent=TIP[t]||'';if(fbOpen)$('fb').hidden=false}
+$('fab').onclick=()=>{fbOpen=!fbOpen;$('fb').hidden=!fbOpen;if(fbOpen)fabTip($('toptabs').querySelector('.tab.on').dataset.tt)};
+$('mpote').oninput=e=>{st.potSize=+e.target.value||1000;sv();maqYield()};
+
+let ACT=null;
+const SLN={s:'Cuerpo (sólidos)',pac:'Blandura (PAC)',f:'Cremosidad (grasa)',m:'Estructura láctea (SLNG)',pod:'Dulzor (POD)'};
+function buildSl(){$('sl').innerHTML=ORDER.map(k=>`<div style="margin-bottom:14px"><div class="mh"><span>${SLN[k]}</span><b class="val" id="sv${k}"></b></div><input type="range" data-s="${k}" style="width:100%;accent-color:var(--acc)" aria-label="${SLN[k]}"><div class="mh rng"><span id="sa${k}"></span><span id="sb${k}"></span></div></div>`).join('')}
+function syncSl(){const {T,c}=calc();if(!T)return;const r=curR();ORDER.forEach(k=>{const el=$('sl').querySelector(`[data-s="${k}"]`),[a,b]=r[k],pt=k==='pac'||k==='pod';el.min=a;el.max=b;el.step=pt?1:.1;if(ACT!==k)el.value=Math.min(b,Math.max(a,c[k]));$('sv'+k).textContent=pt?Math.round(c[k]):c[k].toFixed(1);$('sa'+k).textContent='mín. '+a;$('sb'+k).textContent='máx. '+b})}
+function syncRows(){st.rec.forEach((o,i)=>{const el=$('rows').querySelector(`[data-g="${i}"]`);if(el)el.value=o[1]})}
+function slide(k,t){
+const T0=st.rec.reduce((a,x)=>a+(+x[1]||0),0);if(!T0)return;
+const r=curR(),cur=calc().c,keys=[...new Set(st.rec.map(x=>x[0]))],g0={};
+keys.forEach(q=>g0[q]=st.rec.filter(x=>x[0]===q).reduce((a,x)=>a+(+x[1]||0),0));
+const M=(q,kk)=>ING[q][kk]*(kk==='pac'||kk==='pod'?10:1)/T0,fx={f:0,m:0,s:0,pac:0,pod:0},free=[];let fg=0;
+keys.forEach(q=>{if(catOf(q)==='E'||st.rec.some(x=>x[0]===q&&x[2])){fg+=g0[q];ORDER.forEach(kk=>fx[kk]+=g0[q]*M(q,kk))}else free.push(q)});
+if(!free.length)return;
+const rows=ORDER.map(kk=>{const w=1/Math.max(1,r[kk][1]-r[kk][0]),W=kk===k?30:1,tg=kk===k?t:Math.min(r[kk][1],Math.max(r[kk][0],cur[kk]));return{c:free.map(q=>M(q,kk)*w*W),t:(tg-fx[kk])*w*W}});
+rows.push({c:free.map(()=>300/T0),t:(T0-fg)*300/T0});
+const x=free.map(q=>g0[q]),lb=free.map(q=>st.rec.filter(o=>o[0]===q).reduce((a,o)=>a+(+o[3]||0),0)),ub=free.map((q,j)=>Math.max(lb[j],x[j],(ING[q].d?ING[q].d[1]/1000:(ING[q].cap||CAP[q]||.3))*T0));
+free.forEach((q,j)=>rows.push({c:free.map((_,i)=>i===j?.004:0),t:.004*x[j]}));
+const e=rows.map(o=>o.t-o.c.reduce((a,c,j)=>a+c*x[j],0));
+for(let it=0;it<3000;it++)free.forEach((q,j)=>{let nu=0,de=0;rows.forEach((o,i)=>{nu+=o.c[j]*(e[i]+o.c[j]*x[j]);de+=o.c[j]**2});const v=Math.max(lb[j],Math.min(ub[j],nu/(de||1)));rows.forEach((o,i)=>e[i]-=o.c[j]*(v-x[j]));x[j]=v});
+const g=x.map(Math.round);g[g.indexOf(Math.max(...g))]+=Math.round(T0-fg-g.reduce((a,b)=>a+b,0));
+free.forEach((q,j)=>{let first=true;st.rec.forEach(o=>{if(o[0]===q){o[1]=first?g[j]:0;first=false}})})}
+$('sl').addEventListener('input',e=>{const k=e.target.dataset.s;if(!k)return;ACT=k;slide(k,+e.target.value);syncRows();out();sv();const w=Math.max(1,curR()[k][1]-curR()[k][0]),a=calc().c[k];$('slm').textContent=Math.abs(a-+e.target.value)>w*.04?`Con estos ingredientes no llego más allá de ${k==='pac'||k==='pod'?Math.round(a):a.toFixed(1)}. ${V('Sumá','Suma')} o ${V('cambiá','cambia')} ingredientes para tener más margen.`:''});
+$('sl').addEventListener('change',()=>{ACT=null;syncSl()});
+const CUR={AR:'$',UY:'$',ES:'€',MX:'$',CL:'$',CO:'$',PE:'S/',EC:'$',BO:'Bs',PY:'₲',US:'US$'},cu=()=>CUR[st.pais]||'$';
+function buildCost(){const ks=[...new Set(st.rec.map(x=>x[0]))];$('cpr').innerHTML=ks.length?ks.map(k=>`<div class="mh" style="gap:8px;padding:3px 0;align-items:center"><span style="flex:1">${nm(k)}</span><input type="number" min="0" inputmode="decimal" data-p="${k}" value="${st.price[k]||''}" placeholder="${cu()}/kg" aria-label="Precio por kg" style="width:96px;text-align:right"><span id="pc_${k}" class="rng" style="width:74px;text-align:right"></span></div>`).join(''):'<p class="rng">Agregá ingredientes para calcular costos.</p>';$('pg').value=st.pg||100;$('pv').value=st.pv||''}
+function syncCost(){const T=st.rec.reduce((a,x)=>a+(+x[1]||0),0);let tot=0,miss=0;
+[...new Set(st.rec.map(x=>x[0]))].forEach(k=>{const g=st.rec.filter(x=>x[0]===k).reduce((a,x)=>a+(+x[1]||0),0),p=+st.price[k]||0,c=g*p/1000;tot+=c;if(g>0&&!p)miss++;const e=$('pc_'+k);if(e)e.textContent=c?c.toFixed(2)+' '+cu():''});
+if(!T){$('csm').innerHTML='';return}
+const kg=tot/T*1000,por=kg*(+st.pg||0)/1000,pv=+st.pv||0,f=x=>x.toFixed(2)+' '+cu();
+$('csm').innerHTML=`<div class="mh"><span>Costo de la mezcla (${Math.round(T)} g)</span><b>${f(tot)}</b></div><div class="mh"><span>Por kg de mezcla</span><b>${f(kg)}</b></div><div class="mh"><span>Por litro de mezcla</span><b>${f(kg*1.07)}</b></div><div class="mh"><span>Por porción (${st.pg||0} g)</span><b>${f(por)}</b></div>${pv>0?`<div class="mh"><span>Margen sobre el precio de venta</span><b>${Math.round((pv-por)/pv*100)}%</b></div>`:''}${miss?`<p class="rng" style="margin:8px 0 0">Faltan los precios de ${miss} ingrediente${miss>1?'s':''}: el costo está incompleto.</p>`:''}`}
+$('cpr').addEventListener('input',e=>{const k=e.target.dataset.p;if(!k)return;st.price[k]=+e.target.value||0;syncCost();sv()});
+$('pg').oninput=e=>{st.pg=+e.target.value||0;syncCost();sv()};
+$('pv').oninput=e=>{st.pv=+e.target.value||0;syncCost();sv()};
+let DEL=-1;
+function renderSaved(){$('rl').innerHTML=st.saved.map((r,i)=>`<div class="mh" style="padding:6px 0;border-bottom:1px dashed var(--line);align-items:center"><span>${r.n}</span><span><button data-o="${i}">Abrir</button> <button data-x="${i}">${DEL===i?'¿Seguro?':'✕'}</button></span></div>`).join('')}
+$('rsv').onclick=()=>{const n=$('rn').value.replace(/[<>&"]/g,'').trim()||'Receta '+(st.saved.length+1),dup=st.saved.findIndex(x=>x.n.toLowerCase()===n.toLowerCase());
+if(dup>=0&&dup!==st.openIdx){$('rn').style.borderColor='var(--bad)';$('rmsg').textContent='Ya existe una receta con ese nombre. Poné otro para no pisarla.';return}
+$('rn').style.borderColor='';$('rmsg').textContent='';
+const r={n,base:st.base,q:st.q,u:st.u,rec:JSON.parse(JSON.stringify(st.rec))};
+if(st.openIdx>=0)st.saved[st.openIdx]=r;else{st.saved.push(r);st.openIdx=st.saved.length-1}
+sv();renderSaved();$('rsv').textContent='Guardada ✓';setTimeout(()=>$('rsv').textContent='Guardar receta',1600)};
+$('rl').addEventListener('click',e=>{const o=e.target.dataset.o,x=e.target.dataset.x;if(o!==undefined){const r=st.saved[+o];st.base=r.base;st.q=r.q;st.u=r.u;st.rec=JSON.parse(JSON.stringify(r.rec));st.openIdx=+o;$('rn').value=r.n;$('rmsg').textContent='';render()}else if(x!==undefined){if(DEL===+x){st.saved.splice(+x,1);DEL=-1;sv()}else DEL=+x;renderSaved()}});const RB=[{"n":"Crema base (fior di latte)","b":"crema","t":["Crema","Sin gluten"],"d":"Base neutra para casi todos los sabores.","i":[["leche",578],["nata",201],["polvo",40],["sac",132],["dex",44],["neutro",5]]},{"n":"Crema de vainilla","b":"crema","t":["Crema","Sin gluten"],"d":"Con yema, más cuerpo y color.","i":[["leche",575],["nata",118],["yema",80],["polvo",43],["sac",115],["dex",49],["vain",15],["neutro",5]]},{"n":"Crema de chocolate","b":"crema","t":["Crema","Sin gluten"],"d":"Cacao y chocolate amargo.","i":[["leche",665],["nata",48],["polvo",35],["sac",87],["dex",57],["cacao22",30],["choc",73],["neutro",5]]},{"n":"Crema de dulce de leche","b":"crema","t":["Crema","Sin gluten"],"d":"Con dulce de leche: baja el azúcar común.","i":[["leche",546],["nata",176],["polvo",27],["sac",45],["dex",51],["dulce",150],["neutro",5]]},{"n":"Crema de pistacho","b":"crema","t":["Crema","Sin gluten"],"d":"Con pasta de pistacho.","i":[["leche",664],["nata",50],["polvo",37],["sac",108],["dex",54],["pist",82],["neutro",5]]},{"n":"Sorbete de frutilla / fresa","b":"sorbete","t":["Sorbete","Vegano","Sin gluten"],"d":"Con maltodextrina y jarabe de glucosa para dar cuerpo.","i":[["fruta",400],["sac",76],["dex",70],["maltod",34],["jglu",120],["agua",295],["neutrof",5]]},{"n":"Sorbete de limón","b":"sorbete","t":["Sorbete","Vegano","Sin gluten"],"d":"Fresco y ácido.","i":[["lim",250],["sac",96],["dex",72],["maltod",28],["jglu",120],["agua",429],["neutrof",5]]},{"n":"Sorbete de mango","b":"sorbete","t":["Sorbete","Vegano","Sin gluten"],"d":"Fruta dulce: menos azúcar añadido.","i":[["mango",400],["sac",41],["dex",56],["maltod",51],["jglu",120],["agua",327],["neutrof",5]]},{"n":"Crema vegana de coco","b":"vegana","t":["Crema","Vegano"],"d":"Leche de coco y bebida de avena. Revisá que tu avena sea sin gluten si lo necesitás.","i":[["lcoco",479],["avena",276],["sac",86],["dex",74],["maltod",80],["neutro",5]]},{"n":"Crema vegana de chocolate","b":"vegana","t":["Crema","Vegano"],"d":"Con cacao en polvo. Revisá que tu avena sea sin gluten si lo necesitás.","i":[["lcoco",448],["avena",299],["sac",83],["dex",79],["maltod",46],["cacao22",40],["neutro",5]]}];
+let RFL='';
+
+function renderRangos(){const r=curR();$('rgrows').innerHTML=ORDER.map(k=>`<div class="fg" style="margin-bottom:8px"><label>${INFO[k].t} mín<input type="number" step="any" data-rg="${k}0" value="${r[k][0]}"></label><label>${INFO[k].t} máx<input type="number" step="any" data-rg="${k}1" value="${r[k][1]}"></label></div>`).join('')}
+$('rgsv').onclick=()=>{const o={};ORDER.forEach(k=>{const a=+document.querySelector(`[data-rg="${k}0"]`).value,b=+document.querySelector(`[data-rg="${k}1"]`).value;if(a<b)o[k]=[a,b]});st.customR[st.base]=o;sv();buildSl();syncSl();out();$('rgmsg').textContent='Guardado para '+BL[st.base]+'.'};
+$('rgrs').onclick=()=>{delete st.customR[st.base];sv();renderRangos();buildSl();syncSl();out();$('rgmsg').textContent='Restablecido a los valores de fábrica.'};
+function renderPresets(){const ps=RB.map((r,i)=>[r,i]).filter(([r])=>r.b===st.base);$('presets').innerHTML=ps.length?ps.map(([r,i])=>`<button class="chip2${st.rn2===r.n?' on':''}" data-rp="${i}" style="--cc:var(--acc);flex:none">${r.n.replace(/^(Crema|Sorbete) (de|vegana de)?\s*/i,'')||r.n}</button>`).join(''):''}
+$('presets').addEventListener('click',e=>{const u=e.target.dataset.rp;if(u===undefined)return;const r=RB[+u];st.rec=r.i.map(x=>[x[0],x[1],0,0]);st.rn2=r.n;$('rn').value=r.n;render()});
+function renderRB(){$('rf').innerHTML=['','Crema','Sorbete','Vegano','Sin gluten'].map(t=>`<button class="chip2${RFL===t?' on':''}" data-f="${t}" style="--cc:var(--ink)">${t||'Todas'}</button>`).join('');
+$('rc').innerHTML=RB.map((r,i)=>[r,i]).filter(([r])=>!RFL||r.t.includes(RFL)).map(([r,i])=>`<div class="m"><strong>${r.n}</strong><div>${r.t.map(t=>`<span class="chip ok">${t}</span>`).join('')}</div><p class="rng" style="margin:6px 0 0">${r.d}</p><details><summary>Ver ingredientes (para 1 kg)</summary>${r.i.map(([k,g])=>`<div class="mh"><span>${nm(k)}</span><b>${g} g</b></div>`).join('')}</details><button class="p" data-u="${i}" style="width:100%;margin-top:10px">Usar como base</button></div>`).join('')}
+$('rf').addEventListener('click',e=>{if(e.target.dataset.f===undefined)return;RFL=e.target.dataset.f;renderRB()});
+$('rc').addEventListener('click',e=>{const u=e.target.dataset.u;if(u===undefined)return;const r=RB[+u];st.base=r.b;st.q=1;st.u='kg';st.rec=r.i.map(([k,g])=>[k,g,0,0]);$('rn').value=r.n;showTT('receta');render();});
+const L1L2={inicio:['inicio',null],receta:['recetas','crear'],crear:['recetas','crear'],ing:['recetas','catalogo'],catalogo:['recetas','catalogo'],costos:['recetas','crear'],mis:['recetas','mis'],base:['recetas','comunidad'],comunidad:['recetas','comunidad'],stock:['obrador','stock'],maq:['obrador','maq'],prod:['obrador','prod']};
+const PANE={inicio:'tt-inicio',crear:'tt-crear',catalogo:'tt-catalogo',mis:'tt-mis',comunidad:'tt-comunidad',stock:'tt-stock',maq:'tt-maq',prod:'tt-prod'};
+function showTT(t){const[l1,l2]=L1L2[t]||[t,null];
+$('toptabs').querySelectorAll('[data-l1]').forEach(x=>x.classList.toggle('on',x.dataset.l1===l1));
+$('subrecetas').hidden=l1!=='recetas';$('subobrador').hidden=l1!=='obrador';
+if(l2){const bar=l1==='recetas'?$('subrecetas'):$('subobrador');bar.querySelectorAll('[data-l2]').forEach(x=>x.classList.toggle('on',x.dataset.l2===l2))}
+Object.values(PANE).forEach(id=>$(id).hidden=true);
+$(PANE[l2||l1]).hidden=false;
+if(l2==='mis')renderSaved();if(l2==='stock')renderStock();if(l2==='maq')renderMaq();if(l2==='prod')renderLotes();if(l2==='comunidad')renderRB();
+window.scrollTo(0,0);fabTip(l2||l1)}
+$('subrecetas').addEventListener('click',e=>{const t=e.target.dataset.l2;if(t)showTT(t)});
+$('subobrador').addEventListener('click',e=>{const t=e.target.dataset.l2;if(t)showTT(t)});
+$('toptabs').addEventListener('click',e=>{const t=e.target.dataset.l1;if(!t)return;showTT(t==='recetas'?'crear':t==='obrador'?'stock':t)});
+$('gohacer').onclick=()=>showTT('receta');
+function setLvl(v){st.level=v;document.querySelectorAll('[data-lv]').forEach(b=>b.classList.toggle('on',b.dataset.lv===v));sv();out()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-lv]');if(b)setLvl(b.dataset.lv)});
+document.querySelectorAll('[data-lv]').forEach(b=>b.classList.toggle('on',b.dataset.lv===st.level));
+const BL={crema:'Helado de crema',sorbete:'Sorbete',vegana:'Crema vegana'};
+const PROC={crema:['Pesar todo con balanza de precisión y mezclar el estabilizante con parte del azúcar, para evitar grumos.','Calentar la parte líquida a 40-45 °C y agregar los sólidos (leche en polvo, azúcares, estabilizante).','Pasteurizar (por ejemplo 85 °C por 15-20 s, o 65 °C por 30 min en batch) según la normativa de tu país.','Enfriar rápido a 4 °C.','Madurar entre 4 y 12 horas en frío.','Incorporar pastas, cacao o saborizantes y homogeneizar.','Mantecar hasta la consistencia deseada, endurecer y conservar a -18 °C. Servir entre -12 y -14 °C.'],sorbete:['Pesar todo y mezclar el estabilizante con parte del azúcar, para evitar grumos.','Disolver los azúcares y el jarabe en el agua tibia (unos 40 °C).','Pasteurizar o enfriar según tu proceso y la normativa de tu país, y llevar a 4 °C.','Incorporar la fruta o el zumo bien fríos y homogeneizar.','Reposar 1 o 2 horas en frío.','Mantecar, endurecer y conservar a -18 °C. Servir entre -12 y -14 °C.']};
+PROC.vegana=PROC.crema;
+function ficha(){const T=st.rec.reduce((a,x)=>a+(+x[1]||0),0);if(!T)return null;const {c}=calc(),r=curR(),name=($('rn').value||'Receta sin nombre').replace(/[<>&"]/g,''),ks=[...new Set(st.rec.map(x=>x[0]))].map(k=>[k,st.rec.filter(x=>x[0]===k).reduce((a,x)=>a+(+x[1]||0),0)]).filter(x=>x[1]>0);
+let tot=0;ks.forEach(([k,g])=>tot+=g*(+st.price[k]||0)/1000);
+const L=['FICHA DE PRODUCCIÓN','Receta: '+name,'Tipo: '+BL[st.base],`Cantidad de mezcla: ${Math.round(T)} g (unos ${(T/1070).toFixed(2)} L)`,'','INGREDIENTES',...ks.map(([k,g])=>`- ${nm(k)}: ${Math.round(g)} g`),'','BALANCE',...ORDER.map(k=>{const v=c[k],pt=k==='pac'||k==='pod',ok=v>=r[k][0]&&v<=r[k][1];return `- ${INFO[k].t}: ${pt?Math.round(v):v.toFixed(1)}${INFO[k].u} (ideal ${r[k][0]} a ${r[k][1]}) ${ok?'✓':'⚠ fuera de rango'}`})];
+if(tot>0)L.push('','COSTO',`- Total: ${tot.toFixed(2)} ${cu()}`,`- Por kg de mezcla: ${(tot/T*1000).toFixed(2)} ${cu()}`);
+const nt=nutriTotals();
+if(nt){L.push('','INFORMACIÓN NUTRICIONAL (aproximada, por 100 g de mezcla)',`- Energía: ${nt.p100.kcal} kcal`,`- Grasas: ${nt.p100.fat} g (de las cuales saturadas: ${nt.p100.sat} g, estimado)`,`- Carbohidratos: ${nt.p100.carb} g`,`- Proteínas: ${nt.p100.pro} g`,`- Sodio: ${nt.p100.sod} mg`);
+L.push('','ALÉRGENOS',nt.al.length?nt.al.map(a=>'- '+a).join('\n'):'- No se detectaron alérgenos de declaración obligatoria en esta lista (igual revisá contaminación cruzada en tu obrador).');
+const lc=labelCheck(nt);if(lc&&lc.length)L.push('','ETIQUETADO SEGÚN PAÍS ('+({AR:'Argentina',ES:'España/UE',MX:'México',UY:'Uruguay',CL:'Chile',CO:'Colombia',PE:'Perú',EC:'Ecuador',BO:'Bolivia',PY:'Paraguay',US:'Estados Unidos'}[st.pais]||st.pais)+')',...lc.map(x=>'⚠ '+x));
+L.push('','Esta ficha es una ayuda de trabajo, no un rótulo certificado: los valores nutricionales son estimados a partir de datos genéricos de ingredientes y deben confirmarse con un profesional o laboratorio antes de imprimir una etiqueta real.');}
+L.push('','PROCESO (orientativo: ajustalo a tu equipo y a la normativa sanitaria local)',...PROC[st.base].map((t,i)=>`${i+1}. ${t}`));return L.join('\n')}
+$('fbt').onclick=()=>{const t=ficha();$('fch').hidden=false;$('fch').textContent=t||'Cargá ingredientes primero.';$('fcp').hidden=!t;$('fpr').hidden=!t;$('fprod').hidden=!t;$('fms').textContent=''};
+$('fpr').onclick=()=>{const h=labelHTML();if(!h){$('fms').textContent='Cargá una receta con gramos primero.';return}$('lbl').innerHTML=h;window.print()};
+$('fcp').onclick=()=>{try{navigator.clipboard.writeText($('fch').textContent).then(()=>$('fms').textContent='Ficha copiada.').catch(()=>$('fms').textContent='No pude copiar: mantené presionado el texto para seleccionarlo.')}catch(e){$('fms').textContent='No pude copiar: mantené presionado el texto para seleccionarlo.'}};
+buildSl();
+render();
+</script>
+</body>
+</html>
