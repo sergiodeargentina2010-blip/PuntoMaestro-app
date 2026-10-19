@@ -61,6 +61,7 @@ button.p{font-weight:700}
 .chip2[style*="--cc:var(--acc)"].on{color:var(--accfg)}
 .flow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .fs{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600}
+.scan-btn{background:var(--acc);color:var(--accfg);font-weight:700;width:100%;margin-bottom:10px;border:none}
 </style>
 </head>
 <body>
@@ -171,9 +172,17 @@ button.p{font-weight:700}
 </div>
 <div id="tt-catalogo" hidden>
 <p class="rng" style="margin:0 0 10px">Sumá un ingrediente que no está en el listado, con su ficha técnica o escaneando la etiqueta. Queda disponible para usar en cualquier receta, en su categoría.</p>
-<div class="m"><p class="rng" style="margin:0 0 8px">Escaneá la etiqueta de tu producto o partí de un ingrediente y ajustá los valores de tu marca (por 100 g). Se guarda con tu nombre en la categoría que elijas.</p>
+<div class="m">
+<p class="rng" style="margin:0 0 8px">Escaneá la etiqueta de tu producto o partí de un ingrediente y ajustá los valores de tu marca (por 100 g). Se guarda con tu nombre en la categoría que elijas.</p>
 
-<p class="rng" style="margin:0 0 10px">Cargá los datos de la etiqueta del producto (por 100 g) para calcular sus valores.</p>
+<!-- BOTÓN DE ESCÁNER EN CATÁLOGO -->
+<div id="scw" style="margin-bottom:10px">
+    <button class="scan-btn" id="scb" onclick="document.getElementById('scf').click()">📷 Escanear etiqueta con cámara</button>
+    <input id="scf" type="file" accept="image/*" capture="environment" hidden>
+    <p class="rng" id="scm" style="white-space:pre-line;margin:8px 0 0"></p>
+</div>
+
+<p class="rng" style="margin:0 0 10px">O cargá los datos de la etiqueta a mano (por 100 g).</p>
 <div class="fg" style="margin-bottom:8px"><label>Grasa (g)<input id="mf" type="number" inputmode="decimal"></label><label>Hidratos (g)<input id="mc" type="number" inputmode="decimal"></label><label>Azúcares (g)<input id="ms" type="number" inputmode="decimal"></label><label>Proteínas (g)<input id="mp" type="number" inputmode="decimal"></label></div>
 <input id="mi" style="width:100%;margin-bottom:8px" placeholder="Ingredientes (opcional): leche en polvo, azúcar, cacao…" aria-label="Ingredientes">
 <button id="mgo" style="width:100%;margin-bottom:6px">Calcular desde la etiqueta (por 100 g)</button>
@@ -191,6 +200,13 @@ button.p{font-weight:700}
 </div>
 <div id="tt-stock" hidden>
 <p class="rng" style="margin:0 0 10px">Llevá el control de lo que tenés en el obrador. Cuando termines un lote, descontalo de acá.</p>
+
+<div class="m" style="margin-bottom:10px">
+    <button class="scan-btn" id="stock-scb" onclick="document.getElementById('stock-scf').click()">📷 Escanear ticket o etiqueta</button>
+    <input id="stock-scf" type="file" accept="image/*" capture="environment" hidden>
+    <p class="rng" id="stock-scm" style="white-space:pre-line;margin:8px 0 0"></p>
+</div>
+
 <div class="m">
 <div class="bar"><select id="sadd" aria-label="Ingrediente"></select></div>
 <div class="fg" style="margin-top:8px"><label>Cantidad<input id="sq" type="number" min="0" inputmode="decimal"></label><label>Unidad<select id="su"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option></select></label><label>Aviso si baja de<input id="sm" type="number" min="0" inputmode="decimal" placeholder="opcional"></label><label>Precio pagado (por kg o L)<input id="sp" type="number" min="0" inputmode="decimal" placeholder="opcional"></label></div>
@@ -464,15 +480,87 @@ o.cat=$('cc').value;o.ver=verOk(o)?1:0;st.custom[id]=o;ING[id]=o;BASE[id]=n+(o.v
 let SCAN=null;
 const verOk=o=>SCAN&&['f','m','s','pac','pod'].every(k=>Math.abs(o[k]-SCAN[k])<.05);
 const DOSEC={C:[40,120],N:[40,100],D:[50,150],F:[150,400],O:[5,40]};
-function applyScan(r){const p=r.per100||{},v=k=>p[k]==null?null:+p[k]||0,n=k=>v(k)||0,fat=n('fat'),car=n('carbs'),sug=n('sugars'),pro=n('protein'),fib=n('fiber'),ing=String(r.ingredients||'');
-const so=Math.min(100,Math.round((fat+car+pro+fib+1.5)*10)/10),dairy=/leche|lact|milk|suero|whey|nata|crema|cream|manteca|butter/i.test(ing);
-const m=dairy?Math.round(Math.min(Math.max(0,so-fat-sug),pro/.36)*10)/10:0,lac=Math.min(sug,m*.55),pac=Math.round(sug*10)/10,pod=Math.round((sug-lac+lac*.16)*10)/10;
-SCAN={f:fat,m,s:so,pac,pod};
-const ct=/cacao|cocoa|chocolat/i.test(ing)?'C':/pistach|avellan|almendr|nuez|man[ií]\b|hazelnut|almond|peanut/i.test(ing)?'N':/dulce de leche|caramel|mermelada|jam/i.test(ing+(r.name||''))?'D':$('cc').value,d=DOSEC[ct]||[0,0];
-$('cn').value=String(r.name||'').replace(/[<>&"]/g,'');$('cf').value=fat;$('cm').value=m;$('cs').value=so;$('cp').value=pac;$('cd').value=pod;$('cc').value=ct;$('cl').value=d[0]||'';$('ch').value=d[1]||'';
-const w=[];if(r.basis!=='100g')w.push('No pude confirmar que la tabla sea por 100 g: revisá los valores.');if(fat+car+pro>102)w.push('Los valores suman más de 100 g: puede haber un error de lectura.');if(sug>car+.5)w.push('Los azúcares superan a los hidratos: revisá la foto.');if(['fat','carbs','sugars','protein'].some(k=>v(k)===null))w.push('Hay datos que no se leyeron: completalos a mano.');
-$('mmsg').textContent=`Leído (por 100 g): grasa ${fat}, hidratos ${car}, azúcares ${sug}, proteínas ${pro}.\nEstimado: sólidos ${so}, SLNG ${m}, PAC ${pac}, POD ${pod}.\n`+(w.length?w.join('\n')+'\n':'')+'Revisá y tocá "Guardar ingrediente": si no cambiás los números queda marcado con ✓ (verificado con etiqueta).'}
-$('mgo').onclick=()=>{const N=x=>$(x).value===''?null:+$(x).value;applyScan({name:$('cn').value,per100:{fat:N('mf'),carbs:N('mc'),sugars:N('ms'),protein:N('mp'),fiber:0},ingredients:$('mi').value,basis:'100g'})};
+function applyScan(r,mode='label'){
+    if(mode==='ticket'){
+        const name=String(r.name||'Producto escaneado').replace(/[<>&"]/g,'');
+        // Buscar si el nombre coincide con algún ingrediente existente
+        const matchKey = Object.keys(BASE).find(k => BASE[k].toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(BASE[k].toLowerCase()));
+        
+        if(matchKey){
+            $('sadd').value = matchKey;
+            $('sadd').dispatchEvent(new Event('change'));
+        }
+        
+        if(r.qty) { 
+            const unit = r.unit || 'g';
+            $('su').value = unit;
+            // Convertir si es necesario (ej: si el ticket dice 1kg, poner 1 en unidad kg)
+            $('sq').value = r.qty;
+        }
+        if(r.price) $('sp').value = r.price;
+        
+        $('stock-scm').textContent = `Leído: ${name} - ${r.qty||'?'} ${r.unit||''} - $${r.price||'?'}. Revisá y guardá.`;
+        return;
+    }
+
+    // Lógica para etiquetas (Catálogo)
+    const p=r.per100||{},v=k=>p[k]==null?null:+p[k]||0,n=k=>v(k)||0,fat=n('fat'),car=n('carbs'),sug=n('sugars'),pro=n('protein'),fib=n('fiber'),ing=String(r.ingredients||'');
+    const so=Math.min(100,Math.round((fat+car+pro+fib+1.5)*10)/10),dairy=/leche|lact|milk|suero|whey|nata|crema|cream|manteca|butter/i.test(ing);
+    const m=dairy?Math.round(Math.min(Math.max(0,so-fat-sug),pro/.36)*10)/10:0,lac=Math.min(sug,m*.55),pac=Math.round(sug*10)/10,pod=Math.round((sug-lac+lac*.16)*10)/10;
+    SCAN={f:fat,m,s:so,pac,pod};
+    const ct=/cacao|cocoa|chocolat/i.test(ing)?'C':/pistach|avellan|almendr|nuez|man[ií]\b|hazelnut|almond|peanut/i.test(ing)?'N':/dulce de leche|caramel|mermelada|jam/i.test(ing+(r.name||''))?'D':$('cc').value,d=DOSEC[ct]||[0,0];
+    $('cn').value=String(r.name||'').replace(/[<>&"]/g,'');$('cf').value=fat;$('cm').value=m;$('cs').value=so;$('cp').value=pac;$('cd').value=pod;$('cc').value=ct;$('cl').value=d[0]||'';$('ch').value=d[1]||'';
+    const w=[];if(r.basis!=='100g')w.push('No pude confirmar que la tabla sea por 100 g: revisá los valores.');if(fat+car+pro>102)w.push('Los valores suman más de 100 g: puede haber un error de lectura.');if(sug>car+.5)w.push('Los azúcares superan a los hidratos: revisá la foto.');if(['fat','carbs','sugars','protein'].some(k=>v(k)===null))w.push('Hay datos que no se leyeron: completalos a mano.');
+    $('mmsg').textContent=`Leído (por 100 g): grasa ${fat}, hidratos ${car}, azúcares ${sug}, proteínas ${pro}.\nEstimado: sólidos ${so}, SLNG ${m}, PAC ${pac}, POD ${pod}.\n`+(w.length?w.join('\n')+'\n':'')+'Revisá y tocá "Guardar ingrediente": si no cambiás los números queda marcado con ✓ (verificado con etiqueta).'
+}
+
+// Función genérica para procesar la imagen subida
+async function uploadImage(file, mode, msgEl) {
+    if(!file) return;
+    msgEl.textContent = 'Leyendo...';
+    
+    // Convertir imagen a Base64
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const base64Data = e.target.result.split(',')[1];
+        
+        try {
+            const res = await fetch('/api/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    image: base64Data,
+                    mediaType: file.type,
+                    mode: mode
+                })
+            });
+            
+            const data = await res.json();
+            if(!data.ok) throw new Error(data.error || 'Error desconocido');
+            
+            applyScan(data.data, mode);
+            msgEl.textContent = '¡Leído con éxito! Revisá los datos.';
+        } catch (err) {
+            console.error(err);
+            msgEl.textContent = 'No pude leer la imagen. Probá de nuevo o cargá a mano.';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+// Eventos del escáner (Catálogo)
+$('scf').onchange = (e) => {
+    uploadImage(e.target.files[0], 'label', $('scm'));
+    e.target.value = ''; // Limpiar para permitir subir la misma foto otra vez
+};
+
+// Eventos del escáner (Stock)
+$('stock-scf').onchange = (e) => {
+    uploadImage(e.target.files[0], 'ticket', $('stock-scm'));
+    e.target.value = '';
+};
+
+$('mgo').onclick=()=>{const N=x=>$(x).value===''?null:+$(x).value;applyScan({name:$('cn').value,per100:{fat:N('mf'),carbs:N('mc'),sugars:N('ms'),protein:N('mp'),fiber:0},ingredients:$('mi').value,basis:'100g'},'label')};
 
 $('cc').innerHTML=Object.entries(CATN).filter(([c])=>c!=='U').map(([c,t])=>`<option value="${c}">${t}</option>`).join('');
 
