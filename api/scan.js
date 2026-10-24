@@ -1,8 +1,10 @@
-// api/scan.js — función serverless de Vercel adaptada para Vercel AI Gateway.
-// Lee etiquetas y tickets con visión. La clave vive SOLO en Vercel
-// (Settings → Environment Variables → AI_GATEWAY_API_KEY).
+// api/scan.js — función serverless de Vercel.
+// Lee etiquetas y tickets con la visión de Claude, a través de Vercel AI Gateway.
+// La clave vive SOLO en Vercel (Settings → Environment Variables → AI_GATEWAY_API_KEY),
+// nunca en el navegador.
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'anthropic/claude-sonnet-4.6';
+const GATEWAY_URL = 'https://ai-gateway.vercel.sh/v1/messages';
+const MODEL = process.env.AI_GATEWAY_MODEL || 'anthropic/claude-sonnet-5.5';
 const MAX_B64 = 3500000; // ~2,6 MB de imagen (Vercel admite 4,5 MB por pedido)
 const OK_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -79,10 +81,9 @@ module.exports = async function handler(req, res) {
   if (!/^[A-Za-z0-9+/=]+$/.test(image)) return res.status(400).json({ ok: false, error: 'bad_image' });
 
   try {
-    // CAMBIO 2: URL de Vercel AI Gateway
-    const r = await fetch('https://ai-gateway.vercel.sh/v1/messages', {
+    const r = await fetch(GATEWAY_URL, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + key, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 600,
